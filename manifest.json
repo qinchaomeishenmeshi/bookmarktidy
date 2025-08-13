@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "BookmarkTidy",
+  "version": "1.0.0",
+  "description": "智能书签整理工具：去重、断链检测、AI分类建议",
+  "permissions": [
+    "bookmarks",
+    "storage",
+    "scripting",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://*/",
+    "http://*/"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "BookmarkTidy"
+  },
+  "options_page": "options.html"
+}

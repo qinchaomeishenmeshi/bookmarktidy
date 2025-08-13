@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BookmarkTidy</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>BookmarkTidy</h1>
+      <p class="subtitle">书签整理 · 去重 · 断链检测</p>
+    </header>
+
+    <section class="controls">
+      <label>
+        选择书签文件夹：
+        <select id="folderSelect">
+          <option value="">加载中...</option>
+        </select>
+      </label>
+      <div class="btn-row">
+        <button id="btnScan">扫描</button>
+        <button id="btnDedup" disabled>去重预览</button>
+        <button id="btnLinkCheck" disabled>断链检测</button>
+      </div>
+    </section>
+
+    <section id="result" class="result hidden"></section>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
