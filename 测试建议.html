@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>批量更新标题功能测试建议</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .success { border-left: 4px solid #28a745; }
+        .warning { border-left: 4px solid #ffc107; }
+        .error { border-left: 4px solid #dc3545; }
+        .info { border-left: 4px solid #17a2b8; }
+        
+        .url-list {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .url-item {
+            margin: 5px 0;
+            padding: 5px;
+            background: #f8f9fa;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .status {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .status.good { background: #d4edda; color: #155724; }
+        .status.bad { background: #f8d7da; color: #721c24; }
+        .status.maybe { background: #fff3cd; color: #856404; }
+        
+        h1, h2, h3 { color: #333; }
+        code {
+            background: #f1f3f4;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>📋 批量更新标题功能测试建议</h1>
+    
+    <div class="container success">
+        <h2>✅ 问题已修复</h2>
+        <p><strong>"request is not defined" 错误已解决</strong></p>
+        <p>在 <code>background.js</code> 第155行，将 <code>request.payload</code> 修正为 <code>message.payload</code>。</p>
+    </div>
+
+    <div class="container info">
+        <h2>🧪 推荐测试URL</h2>
+        <p>以下是一些适合测试批量更新标题功能的网站：</p>
+        
+        <h3>✅ 高成功率网站（推荐）</h3>
+        <div class="url-list">
+            <div class="url-item">
+                <span class="status good">推荐</span>
+                https://github.com/microsoft/vscode
+            </div>
+            <div class="url-item">
+                <span class="status good">推荐</span>
+                https://stackoverflow.com/questions/tagged/javascript
+            </div>
+            <div class="url-item">
+                <span class="status good">推荐</span>
+                https://developer.mozilla.org/zh-CN/docs/Web/JavaScript
+            </div>
+            <div class="url-item">
+                <span class="status good">推荐</span>
+                https://www.npmjs.com/package/vue
+            </div>
+            <div class="url-item">
+                <span class="status good">推荐</span>
+                https://vuejs.org/guide/introduction.html
+            </div>
+            <div class="url-item">
+                <span class="status good">推荐</span>
+                https://cn.vitejs.dev/guide/
+            </div>
+        </div>
+
+        <h3>⚠️ 中等成功率网站</h3>
+        <div class="url-list">
+            <div class="url-item">
+                <span class="status maybe">可能</span>
+                https://www.zhihu.com/question/123456
+            </div>
+            <div class="url-item">
+                <span class="status maybe">可能</span>
+                https://juejin.cn/post/123456
+            </div>
+            <div class="url-item">
+                <span class="status maybe">可能</span>
+                https://segmentfault.com/a/123456
+            </div>
+        </div>
+
+        <h3>❌ 低成功率网站（避免测试）</h3>
+        <div class="url-list">
+            <div class="url-item">
+                <span class="status bad">避免</span>
+                交易所网站（如 okx.com, binance.com）
+            </div>
+            <div class="url-item">
+                <span class="status bad">避免</span>
+                区块链浏览器（如 solscan.io, etherscan.io）
+            </div>
+            <div class="url-item">
+                <span class="status bad">避免</span>
+                需要登录的应用（如 app.xxx.com）
+            </div>
+            <div class="url-item">
+                <span class="status bad">避免</span>
+                SMS服务网站（如 sms-activate.guru）
+            </div>
+        </div>
+    </div>
+
+    <div class="container warning">
+        <h2>🔍 测试步骤</h2>
+        <ol>
+            <li><strong>打开书签管理器</strong>
+                <ul>
+                    <li>在浏览器中打开 <code>manager.html</code></li>
+                </ul>
+            </li>
+            <li><strong>选择测试书签</strong>
+                <ul>
+                    <li>建议先选择2-3个推荐的URL进行测试</li>
+                    <li>避免一次性选择过多书签</li>
+                </ul>
+            </li>
+            <li><strong>执行批量更新</strong>
+                <ul>
+                    <li>点击"批量更新标题"按钮</li>
+                    <li>观察按钮状态变化（loading状态）</li>
+                </ul>
+            </li>
+            <li><strong>查看结果</strong>
+                <ul>
+                    <li>页面会显示详细的统计信息</li>
+                    <li>按F12打开开发者工具查看控制台日志</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <div class="container info">
+        <h2>📊 预期结果示例</h2>
+        <h3>成功的结果显示：</h3>
+        <div style="background: #e8f5e8; padding: 10px; border-radius: 4px; margin: 10px 0;">
+            检查了 3 个书签：<br>
+            ✅ 成功更新：2 个<br>
+            📋 标题未变化：1 个
+        </div>
+        
+        <h3>部分失败的结果显示：</h3>
+        <div style="background: #fff3cd; padding: 10px; border-radius: 4px; margin: 10px 0;">
+            检查了 5 个书签：<br>
+            ✅ 成功更新：2 个<br>
+            📋 标题未变化：1 个<br>
+            🚫 跨域限制：1 个<br>
+            🌐 网络错误：1 个
+        </div>
+        
+        <h3>控制台详细日志：</h3>
+        <div style="background: #f8f9fa; padding: 10px; border-radius: 4px; margin: 10px 0; font-family: monospace; font-size: 12px;">
+            批量更新标题详细结果： {<br>
+            &nbsp;&nbsp;stats: {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;total: 3,<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;success: 2,<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;unchanged: 1,<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;networkError: 0,<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;corsError: 0<br>
+            &nbsp;&nbsp;},<br>
+            &nbsp;&nbsp;results: [...]<br>
+            }
+        </div>
+    </div>
+
+    <div class="container error">
+        <h2>🚨 故障排除</h2>
+        <h3>如果仍然遇到问题：</h3>
+        <ul>
+            <li><strong>刷新页面</strong>：重新加载 manager.html</li>
+            <li><strong>检查控制台</strong>：查看是否还有其他JavaScript错误</li>
+            <li><strong>测试单个书签</strong>：先测试一个已知可访问的网站</li>
+            <li><strong>检查网络</strong>：确保网络连接正常</li>
+        </ul>
+        
+        <h3>常见错误信息解释：</h3>
+        <ul>
+            <li><code>跨域限制</code>：网站阻止了跨域请求，这是正常的安全机制</li>
+            <li><code>网络错误</code>：连接超时或网站无法访问</li>
+            <li><code>获取标题失败</code>：网站返回了错误响应或无法解析标题</li>
+        </ul>
+    </div>
+
+    <div class="container success">
+        <h2>🎉 功能改进总结</h2>
+        <p>经过本次改进，批量更新标题功能现在具备：</p>
+        <ul>
+            <li>✅ <strong>详细的错误分类和统计</strong></li>
+            <li>✅ <strong>智能重试机制</strong>（超时控制、递增延迟）</li>
+            <li>✅ <strong>用户友好的进度显示</strong></li>
+            <li>✅ <strong>完善的调试信息输出</strong></li>
+            <li>✅ <strong>修复了JavaScript错误</strong></li>
+        </ul>
+        <p>现在您可以放心使用这个功能来批量更新书签标题了！</p>
+    </div>
+
+    <script>
+        // 添加一些交互效果
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlItems = document.querySelectorAll('.url-item');
+            urlItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const url = this.textContent.trim().replace(/^(推荐|可能|避免)\s*/, '');
+                    if (url.startsWith('http')) {
+                        navigator.clipboard.writeText(url).then(() => {
+                            const originalBg = this.style.backgroundColor;
+                            this.style.backgroundColor = '#d4edda';
+                            setTimeout(() => {
+                                this.style.backgroundColor = originalBg;
+                            }, 1000);
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

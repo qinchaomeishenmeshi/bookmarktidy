@@ -4,12 +4,12 @@
   --primary-hover: #5a6fd8;
   --primary-light: #f093fb;
   --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  
+
   /* 辅助色 - 活力橙红 */
   --accent-color: #ff6b6b;
   --accent-hover: #ee5a52;
   --accent-gradient: linear-gradient(135deg, #ff6b6b 0%, #ffd93d 100%);
-  
+
   /* 浅色模式配色 */
   --bg-light: #f8fafc;
   --bg-secondary: #f1f5f9;
@@ -18,7 +18,7 @@
   --text-muted-light: #94a3b8;
   --border-light: #e2e8f0;
   --border-secondary: #cbd5e1;
-  
+
   /* 深色模式配色 */
   --bg-dark: #0f172a;
   --bg-secondary-dark: #1e293b;
@@ -27,7 +27,7 @@
   --text-muted-dark: #64748b;
   --border-dark: #334155;
   --border-secondary-dark: #475569;
-  
+
   /* 当前使用浅色模式 */
   --background-color: var(--bg-light);
   --background-secondary: var(--bg-secondary);
@@ -37,7 +37,7 @@
   --text-muted: var(--text-muted-light);
   --border-color: var(--border-light);
   --border-secondary: var(--border-secondary);
-  
+
   /* 功能色彩 - 更现代的色调 */
   --success-color: #10b981;
   --success-hover: #059669;
@@ -45,14 +45,14 @@
   --warning-hover: #d97706;
   --error-color: #ef4444;
   --error-hover: #dc2626;
-  
+
   /* 阴影系统 */
   --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  
+
   /* 圆角系统 */
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
@@ -71,7 +71,7 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   background: var(--background-color);
-  background-image: 
+  background-image:
     radial-gradient(circle at 25% 25%, rgba(102, 126, 234, 0.05) 0%, transparent 50%),
     radial-gradient(circle at 75% 75%, rgba(255, 107, 107, 0.05) 0%, transparent 50%);
   color: var(--text-color);
@@ -199,8 +199,15 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .panel-header {
@@ -251,10 +258,21 @@ body {
   box-shadow: var(--shadow-lg);
 }
 
-.stat-card.primary { border-left: 4px solid #667eea; }
-.stat-card.secondary { border-left: 4px solid #764ba2; }
-.stat-card.warning { border-left: 4px solid #f59e0b; }
-.stat-card.danger { border-left: 4px solid #ef4444; }
+.stat-card.primary {
+  border-left: 4px solid #667eea;
+}
+
+.stat-card.secondary {
+  border-left: 4px solid #764ba2;
+}
+
+.stat-card.warning {
+  border-left: 4px solid #f59e0b;
+}
+
+.stat-card.danger {
+  border-left: 4px solid #ef4444;
+}
 
 .stat-icon {
   font-size: 32px;
@@ -355,7 +373,8 @@ body {
   color: var(--text-muted);
 }
 
-.search-btn, .refresh-btn {
+.search-btn,
+.refresh-btn {
   border: none;
   background: var(--primary-gradient);
   color: white;
@@ -369,132 +388,334 @@ body {
   margin-left: 12px;
 }
 
-.search-btn:hover, .refresh-btn:hover {
+.search-btn:hover,
+.refresh-btn:hover {
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
 
 /* 工具栏样式 */
+/* 工具栏主容器 - 优化布局和视觉效果 */
 .toolbar {
-  background: var(--surface-color);
+  background: linear-gradient(135deg, var(--surface-color) 0%, rgba(255, 255, 255, 0.8) 100%);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);
-  padding: 16px;
-  margin: 20px 0;
+  padding: 20px;
+  margin: 24px 0;
   display: flex;
-  gap: 16px;
-  align-items: center;
+  gap: 24px;
+  align-items: flex-start;
   flex-wrap: wrap;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  position: relative;
 }
 
+.toolbar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+.toolbar:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+/* 工具栏分组 - 改进视觉分离 */
 .toolbar-section {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 12px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+  transition: all 0.2s ease;
 }
 
+.toolbar-section:hover {
+  background: rgba(255, 255, 255, 0.7);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 全选容器 - 现代化设计 */
 .select-all-container {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   cursor: pointer;
   user-select: none;
+  padding: 4px 8px;
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.select-all-container:hover {
+  background: rgba(102, 126, 234, 0.05);
 }
 
 .select-all-checkbox {
   display: none;
 }
 
+/* 自定义复选框 */
 .checkmark {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border: 2px solid var(--border-color);
-  border-radius: 4px;
+  border-radius: 6px;
   position: relative;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.select-all-checkbox:checked + .checkmark {
-  background: var(--primary-color);
+.select-all-checkbox:checked+.checkmark {
+  background: linear-gradient(135deg, var(--primary-color) 0%, #5b21b6 100%);
   border-color: var(--primary-color);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
-.select-all-checkbox:checked + .checkmark::after {
+.select-all-checkbox:checked+.checkmark::after {
   content: '✓';
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(1.2);
   color: white;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .select-text {
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-color);
+  font-size: 15px;
 }
 
 .selected-count {
   color: var(--text-secondary);
-  font-size: 14px;
-  margin-left: 8px;
+  font-size: 13px;
+  margin-left: 4px;
+  padding: 2px 8px;
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: var(--radius-sm);
+  font-weight: 500;
 }
 
+/* 现代化选择器 */
 .modern-select {
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 8px 12px;
-  background: var(--surface-color);
+  border-radius: var(--radius-lg);
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
   color: var(--text-color);
   font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
   min-width: 160px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="%23666" d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+  padding-right: 40px;
+}
+
+/* 工具文件夹选择器专用样式 */
+#toolFolderSelect {
+  min-width: 180px;
+  max-width: 220px;
+}
+
+/* 整理策略选择器样式 */
+#organizeStrategy {
+  min-width: 140px;
+  max-width: 160px;
 }
 
 .modern-select:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
-}
-
-.toolbar-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  background: var(--surface-color);
-  color: var(--text-color);
-  font-size: 14px;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-}
-
-.toolbar-btn:hover:not(:disabled) {
-  background: var(--background-secondary);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: #ffffff;
   transform: translateY(-1px);
 }
 
+.modern-select:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+/* 工具栏按钮 - 现代化设计 */
+.toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  color: var(--text-color);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 按钮光泽效果 */
+.toolbar-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.5s ease;
+}
+
+/* 按钮涟漪效果 */
+.toolbar-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(102, 126, 234, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.toolbar-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.toolbar-btn:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.toolbar-btn:hover:not(:disabled)::after {
+  width: 100px;
+  height: 100px;
+}
+
 .toolbar-btn:active:not(:disabled) {
-  transform: translateY(0);
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.toolbar-btn:active:not(:disabled)::after {
+  width: 120px;
+  height: 120px;
+  background: rgba(102, 126, 234, 0.3);
 }
 
 .toolbar-btn:disabled {
-  opacity: 0.55;
+  opacity: 0.5;
   cursor: not-allowed;
+  background: #f1f5f9;
+  box-shadow: none;
+  transform: none;
 }
 
+.toolbar-btn:disabled::before,
+.toolbar-btn:disabled::after {
+  display: none;
+}
+
+/* 危险按钮样式 */
 .toolbar-btn.danger {
-  border-color: var(--error-color);
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
   color: var(--error-color);
+  border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 .toolbar-btn.danger:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.06);
+  background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
+  color: #dc2626;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.toolbar-btn.danger::after {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.toolbar-btn.danger:active:not(:disabled)::after {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+/* 主要按钮样式 */
+.toolbar-btn.primary {
+  background: linear-gradient(135deg, var(--primary-color) 0%, #5b21b6 100%);
+  color: white;
+  font-weight: 600;
+}
+
+.toolbar-btn.primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #5b21b6 0%, #4c1d95 100%);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+}
+
+.toolbar-btn.primary::after {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.toolbar-btn.primary:active:not(:disabled)::after {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 按钮图标优化 */
+.btn-icon {
+  font-size: 16px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+  transition: transform 0.2s ease;
+}
+
+.toolbar-btn:hover .btn-icon {
+  transform: scale(1.1);
+}
+
+/* 按钮加载状态 */
+.toolbar-btn.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.toolbar-btn.loading .btn-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* 书签容器 */
@@ -532,8 +753,13 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* 树状视图样式 */
@@ -572,13 +798,63 @@ body {
   cursor: pointer;
 }
 
-.leaf a {
-  color: #334155;
-  text-decoration: none;
+/* 树状视图叶子节点优化 */
+.tree-node .leaf {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  /* 允许文字截断 */
 }
 
-.leaf a:hover {
+.tree-node .leaf a {
+  color: var(--text-color);
+  text-decoration: none;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  transition: color 0.2s ease;
+}
+
+.tree-node .leaf a:hover {
+  color: var(--primary-color);
   text-decoration: underline;
+}
+
+/* 确保子节点缩进正确 */
+.children {
+  margin-left: 20px;
+  border-left: 1px solid var(--border-color);
+  padding-left: 12px;
+}
+
+.children.hidden {
+  display: none !important;
+}
+
+/* 树状视图的复选框样式 */
+.bookmark-checkbox {
+  flex-shrink: 0;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+}
+
+/* 树状提示样式优化 */
+.tree-hint {
+  background: linear-gradient(45deg, #f8fafc, #e2e8f0);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  text-align: center;
+  box-shadow: var(--shadow-xs);
 }
 
 .bookmark-checkbox {
@@ -637,18 +913,39 @@ body {
   align-items: center;
 }
 
+/* 单个书签移动选择器 - 现代化样式 */
 .single-move-select {
   font-size: 12px;
-  padding: 4px 8px;
+  padding: 6px 12px;
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  background: var(--surface-color);
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  color: var(--text-color);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="%23666" d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 10px;
+  padding-right: 28px;
+  min-width: 120px;
 }
 
 .single-move-select:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2), 0 4px 8px rgba(0, 0, 0, 0.12);
+  background: #ffffff;
+  transform: translateY(-1px);
+}
+
+.single-move-select:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
 }
 
 .btn-single-delete {
@@ -715,12 +1012,12 @@ body {
   transition: all 0.2s ease;
 }
 
-.setting-checkbox:checked + .checkbox-custom {
+.setting-checkbox:checked+.checkbox-custom {
   background: linear-gradient(135deg, #ff6b6b, #ee5a24);
   border-color: #ff6b6b;
 }
 
-.setting-checkbox:checked + .checkbox-custom::after {
+.setting-checkbox:checked+.checkbox-custom::after {
   content: '✓';
   position: absolute;
   top: 50%;
@@ -736,19 +1033,61 @@ body {
   color: #333;
 }
 
-.setting-input, .setting-select {
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 8px 12px;
+/* 设置页面输入框和选择器 - 现代化样式 */
+.setting-input {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
   font-size: 14px;
-  background: white;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  color: var(--text-color);
+  font-weight: 500;
   min-width: 120px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
-.setting-input:focus, .setting-select:focus {
+.setting-select {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-size: 14px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  color: var(--text-color);
+  font-weight: 500;
+  cursor: pointer;
+  min-width: 120px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="%23666" d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+  padding-right: 40px;
+}
+
+.setting-input:focus {
   outline: none;
-  border-color: #ff6b6b;
-  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2), 0 4px 8px rgba(0, 0, 0, 0.12);
+  background: #ffffff;
+  transform: translateY(-1px);
+}
+
+.setting-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2), 0 4px 8px rgba(0, 0, 0, 0.12);
+  background: #ffffff;
+  transform: translateY(-1px);
+}
+
+.setting-input:hover,
+.setting-select:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
 }
 
 .setting-actions {
@@ -819,6 +1158,7 @@ body {
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -896,15 +1236,580 @@ body {
     --text-secondary: var(--text-secondary-dark);
     --border-color: var(--border-dark);
   }
-  
+
   .container {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   }
-  
+
   .bookmark-item:hover {
     background-color: rgba(74, 144, 226, 0.15);
   }
+
+  .toolbar-btn:hover:not(:disabled) {
+    background: rgba(74, 144, 226, 0.15);
+  }
+}
+
+/* 响应式设计 */
+/* 响应式设计优化 */
+@media (max-width: 1024px) {
+  .toolbar {
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .toolbar-section {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .modern-select {
+    min-width: 140px;
+    font-size: 13px;
+  }
   
+  #toolFolderSelect {
+    min-width: 160px;
+    max-width: 180px;
+  }
+  
+  #organizeStrategy {
+    min-width: 120px;
+    max-width: 140px;
+  }
+
+  .toolbar-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .main-nav {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .stats-container {
+    grid-template-columns: 1fr;
+  }
+
+  /* 移动端工具栏优化 */
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 16px;
+    margin: 16px 0;
+  }
+
+  .toolbar-section {
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .toolbar-section:hover {
+    transform: none;
+  }
+
+  .modern-select {
+    min-width: 120px;
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+  
+  #toolFolderSelect {
+    min-width: 140px;
+    max-width: 160px;
+  }
+  
+  #organizeStrategy {
+    min-width: 110px;
+    max-width: 130px;
+  }
+
+  .toolbar-btn {
+    padding: 10px 14px;
+    font-size: 14px;
+    min-width: 100px;
+    justify-content: center;
+  }
+
+  .toolbar-btn:hover:not(:disabled) {
+    transform: translateY(-1px) scale(1.01);
+  }
+
+  .select-text {
+    font-size: 14px;
+  }
+
+  .selected-count {
+    font-size: 12px;
+  }
+
+  .quick-actions {
+    flex-direction: column;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-input {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .toolbar {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .toolbar-section {
+    padding: 8px;
+    gap: 6px;
+  }
+
+  .toolbar-btn {
+    padding: 8px 10px;
+    font-size: 13px;
+    min-width: 80px;
+  }
+
+  .modern-select {
+    min-width: 100px;
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+  
+  #toolFolderSelect {
+    min-width: 120px;
+    max-width: 140px;
+  }
+  
+  #organizeStrategy {
+    min-width: 100px;
+    max-width: 120px;
+  }
+
+  .btn-icon {
+    font-size: 14px;
+  }
+
+  .checkmark {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* 视图切换按钮基础样式 */
+.view-toggle-container {
+  display: flex;
+  gap: 8px;
+}
+
+.view-toggle-btn {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-toggle-btn.active {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* 列表与树容器的一些占位类（按需补充） */
+.bookmarks-list-container {
+  min-height: 120px;
+}
+
+.bookmarks-tree-container {
+  min-height: 120px;
+}
+
+/* 树状视图容器基础布局，避免被列表样式影响 */
+.bookmarks-tree-container {
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* 列表容器基础布局 */
+.bookmarks-list-container {
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #ff6b6b;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* 树状视图样式 */
+.tree-node {
+  margin: 2px 0;
+}
+
+.node-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.2s ease;
+}
+
+.node-row:hover {
+  background: rgba(102, 126, 234, 0.08);
+}
+
+.caret {
+  cursor: pointer;
+  user-select: none;
+  font-size: 12px;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.caret.expanded {
+  transform: rotate(90deg);
+}
+
+.folder {
+  font-weight: 600;
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+/* 树状视图叶子节点优化 */
+.tree-node .leaf {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  /* 允许文字截断 */
+}
+
+.tree-node .leaf a {
+  color: var(--text-color);
+  text-decoration: none;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  transition: color 0.2s ease;
+}
+
+.tree-node .leaf a:hover {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+
+/* 确保子节点缩进正确 */
+.children {
+  margin-left: 20px;
+  border-left: 1px solid var(--border-color);
+  padding-left: 12px;
+}
+
+.children.hidden {
+  display: none !important;
+}
+
+/* 树状视图的复选框样式 */
+.bookmark-checkbox {
+  flex-shrink: 0;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+}
+
+/* 树状提示样式优化 */
+.tree-hint {
+  background: linear-gradient(45deg, #f8fafc, #e2e8f0);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  text-align: center;
+  box-shadow: var(--shadow-xs);
+}
+
+.bookmark-checkbox {
+  margin-right: 4px;
+  cursor: pointer;
+}
+
+/* 书签行样式 */
+.bm-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  margin: 4px 0;
+  background: var(--background-secondary);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  border: 1px solid var(--border-color);
+}
+
+.bm-row:hover {
+  background: var(--surface-color);
+  transform: translateX(2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.bm-checkbox {
+  flex-shrink: 0;
+}
+
+.bm-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.bm-title {
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bm-url {
+  font-size: 12px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bm-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* 重复的样式定义已删除，使用前面定义的现代化样式 */
+
+.btn-single-delete {
+  border: 1px solid var(--error-color);
+  background: transparent;
+  color: var(--error-color);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.btn-single-delete:hover {
+  background: rgba(239, 68, 68, 0.06);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* 设置页面 */
+.settings-container {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 24px;
+  margin-top: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.result-section {
+  margin-bottom: 16px;
+}
+
+.progress-container {
+  margin: 16px 0;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff6b6b, #ee5a24);
+  width: 0%;
+  transition: width 0.3s ease;
+  border-radius: 4px;
+}
+
+.progress-text {
+  font-size: 12px;
+  color: #666;
+  margin-top: 8px;
+  text-align: center;
+}
+
+/* 消息提示 */
+.message-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 1000;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* 隐藏类 */
+.hidden {
+  display: none !important;
+}
+
+/* 分页控件样式 */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.pagination button {
+  padding: 8px 16px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-color);
+  color: var(--text-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--surface-color);
+  color: var(--text-secondary);
+}
+
+#pageInfo {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin: 0 16px;
+  font-weight: 500;
+}
+
+/* 空状态样式 */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+  background: var(--surface-color);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.empty-state p {
+  font-size: 16px;
+  margin: 0;
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* 切换到深色模式配色 */
+    --background-color: var(--bg-dark);
+    --surface-color: #2A2A2A;
+    --text-color: var(--text-primary-dark);
+    --text-secondary: var(--text-secondary-dark);
+    --border-color: var(--border-dark);
+  }
+
+  .container {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .bookmark-item:hover {
+    background-color: rgba(74, 144, 226, 0.15);
+  }
+
   .toolbar-btn:hover:not(:disabled) {
     background: rgba(74, 144, 226, 0.15);
   }
@@ -916,45 +1821,35 @@ body {
     flex-direction: column;
     gap: 16px;
   }
-  
+
   .main-nav {
     width: 100%;
     justify-content: center;
   }
-  
+
   .stats-container {
     grid-template-columns: 1fr;
   }
-  
+
   .toolbar {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .toolbar-section {
     justify-content: center;
   }
-  
+
   .quick-actions {
     flex-direction: column;
   }
-  
+
   .header-actions {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .search-input {
     min-width: auto;
   }
 }
-
-/* 视图切换按钮基础样式 */
-.view-toggle-container { display: flex; gap: 8px; }
-.view-toggle-btn { border: 1px solid #e5e7eb; background: #fff; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
-.view-toggle-btn.active { background: #2563eb; color: #fff; border-color: #2563eb; }
-.hidden { display: none !important; }
-
-/* 列表与树容器的一些占位类（按需补充） */
-.bookmarks-list-container { min-height: 120px; }
-.bookmarks-tree-container { min-height: 120px; }

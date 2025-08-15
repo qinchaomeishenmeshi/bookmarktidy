@@ -126,6 +126,10 @@
               <span class="btn-icon">📁</span>
               移动
             </button>
+            <button id="btnBatchUpdateTitle" class="toolbar-btn" disabled>
+              <span class="btn-icon">🏷️</span>
+              更新标题
+            </button>
             <button id="btnBatchDelete" class="toolbar-btn danger" disabled>
               <span class="btn-icon">🗑️</span>
               删除
@@ -133,9 +137,32 @@
           </div>
           
           <div class="toolbar-section">
-            <select id="toolFolderSelect" class="modern-select">
+            <select id="toolFolderSelect" class="modern-select" style="width: 180px;">
               <option value="">选择整理目标...</option>
             </select>
+            <select id="organizeStrategy" class="modern-select" style="width: 140px;">
+              <option value="domain">按域名分类</option>
+              <option value="topDomain">按顶级域名</option>
+              <option value="pathPrefix">按路径前缀</option>
+              <option value="keyword">按标题关键词</option>
+            </select>
+            <label class="setting-label" style="margin-left: 8px; font-size: 13px;">
+              <input type="checkbox" id="cleanEmptyFolders" class="setting-checkbox" checked />
+              <span class="checkbox-custom" style="transform: scale(0.8);"></span>
+              <span class="label-text">清理空文件夹</span>
+            </label>
+            <button id="btnSmartOrganize" class="toolbar-btn" disabled>
+              <span class="btn-icon">🤖</span>
+              智能整理
+            </button>
+            <button id="btnAiOrganizePreview" class="toolbar-btn" disabled>
+              <span class="btn-icon">🧠</span>
+              AI分析
+            </button>
+            <button id="btnAiOrganizeApply" class="toolbar-btn" disabled>
+              <span class="btn-icon">✨</span>
+              AI整理
+            </button>
             <button id="btnDedupPreview" class="toolbar-btn" disabled>
               <span class="btn-icon">🔍</span>
               去重预览

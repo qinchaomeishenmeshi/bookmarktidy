@@ -2,7 +2,39 @@
 // 说明：此文件内的函数将添加中文注释，便于阅读与维护
 
 // 引入工具脚本（MV3 Service Worker 支持 importScripts）
-try { importScripts('utils/urlNormalizer.js'); } catch (e) { console.warn('无法加载 urlNormalizer 工具', e); }
+try { 
+  importScripts('utils/urlNormalizer.js'); 
+  console.log('[BookmarkTidy] urlNormalizer.js 加载成功');
+} catch (e) { 
+  console.warn('无法加载 urlNormalizer 工具', e); 
+}
+
+try { 
+  importScripts('ai-organizer.js'); 
+  console.log('[BookmarkTidy] ai-organizer.js 加载成功');
+  // 检查关键函数是否已定义
+  if (typeof aiSmartOrganize === 'function') {
+    console.log('[BookmarkTidy] aiSmartOrganize 函数已定义');
+    // 确保函数在全局作用域中可用
+    self.aiSmartOrganize = aiSmartOrganize;
+  } else {
+    console.error('[BookmarkTidy] aiSmartOrganize 函数未定义');
+    // 尝试重新加载模块
+    importScripts('ai-organizer.js');
+  }
+} catch (e) { 
+  console.error('[BookmarkTidy] 无法加载 AI整理器模块', e); 
+  // 尝试第二次加载
+  try {
+    importScripts('ai-organizer.js');
+    console.log('[BookmarkTidy] 第二次尝试加载 ai-organizer.js 成功');
+    if (typeof aiSmartOrganize === 'function') {
+      self.aiSmartOrganize = aiSmartOrganize;
+    }
+  } catch (e2) {
+    console.error('[BookmarkTidy] 第二次尝试加载 AI整理器模块失败', e2);
+  }
+}
 
 // 全局状态：用于一次性撤销
 let lastAction = null;
@@ -106,6 +138,139 @@ function defaultHandlers() {
         deleteBookmark(bookmarkId)
           .then(result => sendResponse({ ok: true, result }))
           .catch(err => sendResponse({ ok: false, error: String(err) }));
+        return true;
+      }
+
+      case 'UPDATE_BOOKMARK_TITLE': {
+        // 更新书签标题
+        const { bookmarkId, newTitle } = message.payload || {};
+        updateBookmarkTitle(bookmarkId, newTitle)
+          .then(result => sendResponse({ ok: true, result }))
+          .catch(err => sendResponse({ ok: false, error: String(err) }));
+        return true;
+      }
+
+      case 'FETCH_PAGE_TITLE': {
+        // 获取网页标题
+        const { url } = message.payload || {};
+        fetchPageTitle(url)
+          .then(result => sendResponse({ ok: true, title: result.title }))
+          .catch(err => sendResponse({ ok: false, error: err.message }));
+        return true;
+      }
+
+      case 'SMART_ORGANIZE_BY_DOMAIN': {
+        // 智能整理：根据策略将选中文件夹下的书签归类到同级子文件夹
+        const { folderId, strategy = 'domain', cleanEmptyFolders = false } = message.payload || {};
+        smartOrganize(folderId, { strategy, cleanEmptyFolders })
+          .then(res => sendResponse({ ok: true, ...res }))
+          .catch(err => sendResponse({ ok: false, error: String(err) }));
+        return true;
+      }
+
+      case 'AI_ORGANIZE_PREVIEW': {
+        // AI智能整理预览：分析书签内容并返回分类建议
+        const { folderId, apiKey, batchSize } = message;
+        console.log('[BookmarkTidy] AI分析请求:', { folderId, batchSize }); // 添加日志
+        if (!folderId) {
+          sendResponse({ ok: false, error: '文件夹ID不能为空' });
+          return true;
+        }
+        
+        // 确保AI整理模块已加载
+        try {
+          // 如果模块未加载，尝试重新加载
+          if (typeof aiSmartOrganize !== 'function' && typeof self.aiSmartOrganize !== 'function') {
+            console.log('[BookmarkTidy] 尝试重新加载AI整理模块');
+            importScripts('ai-organizer.js');
+          }
+          
+          // 检查函数是否已定义
+          console.log('[BookmarkTidy] 检查aiSmartOrganize函数:', typeof aiSmartOrganize);
+          console.log('[BookmarkTidy] self对象中的aiSmartOrganize:', typeof self.aiSmartOrganize);
+          
+          // 确定要使用的函数
+          let organizeFunc = null;
+          if (typeof aiSmartOrganize === 'function') {
+            organizeFunc = aiSmartOrganize;
+            console.log('[BookmarkTidy] 使用全局aiSmartOrganize函数');
+          } else if (typeof self.aiSmartOrganize === 'function') {
+            organizeFunc = self.aiSmartOrganize;
+            console.log('[BookmarkTidy] 使用self.aiSmartOrganize函数');
+          }
+          
+          if (organizeFunc) {
+            // 使用正确的函数引用
+            organizeFunc(folderId, { apiKey, batchSize, dryRun: true })
+              .then(result => {
+                console.log('[BookmarkTidy] AI分析完成:', result); // 添加日志
+                sendResponse({ ok: true, data: result })
+              })
+              .catch(err => {
+                console.error('[BookmarkTidy] AI分析失败:', err); // 添加错误日志
+                sendResponse({ ok: false, error: String(err) })
+              });
+          } else {
+            console.error('[BookmarkTidy] AI整理模块未能正确加载');
+            sendResponse({ ok: false, error: 'AI整理模块未能正确加载，请刷新页面重试' });
+          }
+        } catch (e) {
+          console.error('[BookmarkTidy] 处理AI分析请求时出错:', e);
+          sendResponse({ ok: false, error: '处理请求时出错: ' + String(e) });
+        }
+        return true;
+      }
+
+      case 'AI_ORGANIZE_APPLY': {
+        // AI智能整理执行：根据AI分析结果执行书签分类
+        const { folderId, apiKey, batchSize, cleanEmptyFolders = false } = message;
+        console.log('[BookmarkTidy] AI整理请求:', { folderId, batchSize, cleanEmptyFolders }); // 添加日志
+        if (!folderId) {
+          sendResponse({ ok: false, error: '文件夹ID不能为空' });
+          return true;
+        }
+        
+        // 确保AI整理模块已加载
+        try {
+          // 如果模块未加载，尝试重新加载
+          if (typeof aiSmartOrganize !== 'function' && typeof self.aiSmartOrganize !== 'function') {
+            console.log('[BookmarkTidy] 尝试重新加载AI整理模块');
+            importScripts('ai-organizer.js');
+          }
+          
+          // 检查函数是否已定义
+          console.log('[BookmarkTidy] 检查aiSmartOrganize函数:', typeof aiSmartOrganize);
+          console.log('[BookmarkTidy] self对象中的aiSmartOrganize:', typeof self.aiSmartOrganize);
+          
+          // 确定要使用的函数
+          let organizeFunc = null;
+          if (typeof aiSmartOrganize === 'function') {
+            organizeFunc = aiSmartOrganize;
+            console.log('[BookmarkTidy] 使用全局aiSmartOrganize函数');
+          } else if (typeof self.aiSmartOrganize === 'function') {
+            organizeFunc = self.aiSmartOrganize;
+            console.log('[BookmarkTidy] 使用self.aiSmartOrganize函数');
+          }
+          
+          if (organizeFunc) {
+            // 使用正确的函数引用
+            organizeFunc(folderId, { apiKey, batchSize, cleanEmptyFolders, dryRun: false })
+              .then(result => {
+                console.log('[BookmarkTidy] AI整理完成:', result); // 添加日志
+                sendResponse({ ok: true, data: result })
+            })
+              .catch(err => {
+                console.error('[BookmarkTidy] AI整理失败:', err); // 添加错误日志
+                sendResponse({ ok: false, error: String(err) })
+              });
+          } else {
+            console.error('[BookmarkTidy] AI整理模块未能正确加载');
+            sendResponse({ ok: false, error: 'AI整理模块未能正确加载，请刷新页面重试' });
+          }
+        } catch (e) {
+          console.error('[BookmarkTidy] 处理AI整理请求时出错:', e);
+          sendResponse({ ok: false, error: '处理请求时出错: ' + String(e) });
+        }
         return true;
       }
 
@@ -254,10 +419,12 @@ async function undoLastAction() {
       }
 
       case 'BATCH_MOVE':
-      case 'MOVE': {
+      case 'MOVE':
+      case 'AI_ORGANIZE': {
         // 恢复移动的书签到原位置
         const items = lastAction.type === 'MOVE' ? [lastAction.data] : lastAction.data;
         
+        // 先恢复书签位置
         for (const item of items) {
           try {
             await chrome.bookmarks.move(item.id, {
@@ -269,7 +436,58 @@ async function undoLastAction() {
             console.warn('恢复书签位置失败', item, e);
           }
         }
+
+        // 删除智能整理时新建的空文件夹（如果有）
+        let deletedFolders = 0;
+        if (lastAction.createdFolderIds && Array.isArray(lastAction.createdFolderIds)) {
+          for (const folderId of lastAction.createdFolderIds) {
+            try {
+              // 检查文件夹是否为空，避免误删有内容的文件夹
+              const children = await chrome.bookmarks.getChildren(folderId);
+              if (!children || children.length === 0) {
+                await chrome.bookmarks.removeTree(folderId);
+                deletedFolders += 1;
+              }
+            } catch (e) {
+              console.warn('删除空文件夹失败', folderId, e);
+            }
+          }
+        }
+
+        // 重建被清理的空文件夹（如果有）
+        let recreatedFolders = 0;
+        if (lastAction.cleanedEmptyFolders && Array.isArray(lastAction.cleanedEmptyFolders)) {
+          for (const f of lastAction.cleanedEmptyFolders) {
+            try {
+              await chrome.bookmarks.create({ parentId: f.parentId, index: f.index ?? 0, title: f.title });
+              recreatedFolders += 1;
+            } catch (e) {
+              console.warn('重建被清理的空文件夹失败', f, e);
+            }
+          }
+        }
+
         message = `成功恢复 ${restored} 个书签的位置`;
+        if (deletedFolders > 0) {
+          message += `，清理 ${deletedFolders} 个新建的空文件夹`;
+        }
+        if (recreatedFolders > 0) {
+          message += `，重建 ${recreatedFolders} 个被清理的空文件夹`;
+        }
+        break;
+      }
+
+      case 'UPDATE_TITLE': {
+        // 恢复书签标题
+        const { id, oldTitle } = lastAction.data;
+        try {
+          await chrome.bookmarks.update(id, { title: oldTitle });
+          restored = 1;
+          message = `成功恢复书签标题："${oldTitle}"`;
+        } catch (e) {
+          console.warn('恢复书签标题失败', lastAction.data, e);
+          message = `恢复书签标题失败: ${e.message}`;
+        }
         break;
       }
 
@@ -564,4 +782,386 @@ async function deleteBookmark(bookmarkId) {
   } catch (error) {
     throw new Error(`删除书签失败: ${error.message}`);
   }
+}
+
+/**
+ * updateBookmarkTitle
+ * 中文说明：更新书签标题
+ * @param {string} bookmarkId 书签ID
+ * @param {string} newTitle 新标题
+ * @returns {Promise<Object>} 更新结果
+ */
+async function updateBookmarkTitle(bookmarkId, newTitle) {
+  if (!bookmarkId) {
+    throw new Error('书签ID不能为空');
+  }
+  
+  if (!newTitle || typeof newTitle !== 'string') {
+    throw new Error('新标题不能为空');
+  }
+  
+  try {
+    // 获取书签当前信息
+    const [bookmark] = await chrome.bookmarks.get(bookmarkId);
+    const oldTitle = bookmark.title;
+    
+    // 更新书签标题
+    await chrome.bookmarks.update(bookmarkId, { title: newTitle });
+    
+    // 记录撤销信息
+    lastAction = {
+      type: 'UPDATE_TITLE',
+      timestamp: Date.now(),
+      data: {
+        id: bookmarkId,
+        oldTitle: oldTitle,
+        newTitle: newTitle
+      }
+    };
+    
+    return { success: true, oldTitle, newTitle };
+  } catch (error) {
+    throw new Error(`更新书签标题失败: ${error.message}`);
+  }
+}
+
+/**
+ * smartOrganizeByDomain
+ * 中文说明：根据域名自动整理指定文件夹下的所有书签
+ * - 在目标文件夹下为每个域名创建子文件夹
+ * - 将书签移动到对应域名的子文件夹
+ * - 记录撤销信息，支持一次性撤销
+ */
+async function smartOrganizeByDomain(folderId) {
+  // 获取目标文件夹下的所有子项
+  const children = await chrome.bookmarks.getChildren(folderId);
+  if (!children || !children.length) return { moved: 0, createdFolders: 0 };
+
+  // 构建域名到文件夹ID的映射，避免重复创建
+  const domainFolderMap = new Map();
+  let createdFolders = 0;
+  let moved = 0;
+  const moveActions = [];
+
+  // 工具函数：获取或创建域名文件夹
+  async function getOrCreateDomainFolder(domain) {
+    if (domainFolderMap.has(domain)) return domainFolderMap.get(domain);
+    // 尝试查找同名文件夹
+    const siblings = await chrome.bookmarks.getChildren(folderId);
+    const exist = siblings.find(it => !it.url && it.title === domain);
+    let id = exist?.id;
+    if (!id) {
+      const created = await chrome.bookmarks.create({ parentId: folderId, title: domain });
+      id = created.id;
+      createdFolders++;
+    }
+    domainFolderMap.set(domain, id);
+    return id;
+  }
+
+  // 提取域名
+  const getDomain = (url) => {
+    try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return '未知来源'; }
+  };
+
+  // 遍历仅顶层书签（不递归），按域名分组
+  for (const c of children) {
+    if (c.url) {
+      const domain = getDomain(c.url);
+      const targetFolderId = await getOrCreateDomainFolder(domain);
+      if (c.parentId !== targetFolderId) {
+        moveActions.push({ id: c.id, from: c.parentId, to: targetFolderId, index: 0 });
+      }
+    }
+  }
+
+  // 批量移动
+  for (const act of moveActions) {
+    await chrome.bookmarks.move(act.id, { parentId: act.to, index: act.index });
+    moved++;
+  }
+
+  // 记录撤销
+  if (moved > 0 || createdFolders > 0) {
+    lastAction = {
+      type: 'BATCH_MOVE',
+      items: moveActions.map(a => ({ id: a.id, from: a.from, to: a.to })),
+      createdFolders: domainFolderMap, // 记录创建的文件夹（名称->id）
+    };
+  }
+
+  return { moved, createdFolders };
+}
+
+// 添加智能整理功能到现有的消息分发器中
+function addSmartOrganizeHandler() {
+  // 由于已经存在 defaultHandlers() 中的消息监听器，我们需要在那里添加新的 case
+  // 这里只是确保函数可用，实际的 case 需要添加到第23行的监听器中
+}
+
+// 在 background.js 加载时确保智能整理函数可用
+addSmartOrganizeHandler();
+
+/**
+ * fetchPageTitle
+ * 中文说明：获取指定URL的网页标题，支持超时和重试机制
+ * @param {string} url 网页URL
+ * @param {number} timeout 超时时间（毫秒），默认8000ms
+ * @param {number} retries 重试次数，默认1次
+ * @returns {Promise<{title: string}>} 网页标题
+ */
+async function fetchPageTitle(url, timeout = 8000, retries = 1) {
+  if (!url || typeof url !== 'string') {
+    throw new Error('URL不能为空或无效');
+  }
+  
+  // 检查是否为特殊协议
+  if (url.startsWith('chrome://') || 
+      url.startsWith('chrome-extension://') || 
+      url.startsWith('moz-extension://') ||
+      url.startsWith('about:') ||
+      url.startsWith('file://')) {
+    throw new Error('不支持的协议类型');
+  }
+  
+  let lastError = null;
+  
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+      
+      try {
+        const response = await fetch(url, {
+          method: 'GET',
+          mode: 'cors',
+          signal: controller.signal,
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+            'Cache-Control': 'no-cache'
+          }
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const html = await response.text();
+        
+        // 解析HTML获取title标签内容
+        const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
+        let title = '';
+        
+        if (titleMatch && titleMatch[1]) {
+          // 解码HTML实体并清理空白字符
+          title = titleMatch[1]
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'")
+            .replace(/&nbsp;/g, ' ')
+            .replace(/&#x([0-9a-fA-F]+);/g, (match, hex) => String.fromCharCode(parseInt(hex, 16)))
+            .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(parseInt(dec, 10)))
+            .replace(/\s+/g, ' ')
+            .trim();
+        }
+        
+        // 如果没有获取到标题，尝试从其他元素获取
+        if (!title) {
+          const h1Match = html.match(/<h1[^>]*>([^<]*)<\/h1>/i);
+          if (h1Match && h1Match[1]) {
+            title = h1Match[1].trim();
+          }
+        }
+        
+        return { title: title || '无标题' };
+        
+      } finally {
+        clearTimeout(timeoutId);
+      }
+      
+    } catch (error) {
+      lastError = error;
+      const isLastAttempt = attempt === retries;
+      const errorMsg = error.message || String(error);
+      
+      // 记录错误信息
+      console.warn(`fetchPageTitle 第${attempt + 1}次尝试失败 ${url}:`, errorMsg);
+      
+      // 如果是最后一次尝试，抛出错误
+      if (isLastAttempt) {
+        break;
+      }
+      
+      // 等待一段时间后重试
+      if (attempt < retries) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+      }
+    }
+  }
+  
+  // 所有尝试都失败了
+  const errorMsg = lastError?.message || '未知错误';
+  
+  // 根据错误类型提供更具体的错误信息
+  if (errorMsg.includes('CORS') || errorMsg.includes('cors')) {
+    throw new Error('跨域限制：无法访问该网站');
+  } else if (errorMsg.includes('timeout') || errorMsg.includes('aborted')) {
+    throw new Error('请求超时：网站响应过慢');
+  } else if (errorMsg.includes('network') || errorMsg.includes('fetch')) {
+    throw new Error('网络错误：无法连接到网站');
+  } else if (errorMsg.includes('404')) {
+    throw new Error('页面不存在：404错误');
+  } else if (errorMsg.includes('403')) {
+    throw new Error('访问被拒绝：403错误');
+  } else if (errorMsg.includes('500')) {
+    throw new Error('服务器错误：500错误');
+  } else {
+    throw new Error(`获取网页标题失败: ${errorMsg}`);
+  }
+}
+
+/**
+ * smartOrganize
+ * 中文说明：根据不同策略对指定文件夹下的顶层书签进行分类整理
+ * 支持策略：
+ *  - domain：按域名（去除 www 前缀）
+ *  - topDomain：按 eTLD+1（粗略基于 hostname 的最后两段）
+ *  - pathPrefix：按 URL 路径的首段（/a/... -> a；空路径归入“根路径”）
+ *  - keyword：按标题关键词（将首个空格分隔词作为“关键词”；没有标题归“未命名”）
+ * 同时支持清理空文件夹选项
+ * @param {string} folderId 目标文件夹 ID
+ * @param {{strategy:'domain'|'topDomain'|'pathPrefix'|'keyword', cleanEmptyFolders?:boolean}} options 选项
+ * @returns {Promise<{moved:number, createdFolders:number, cleanedFolders:number}>}
+ */
+async function smartOrganize(folderId, options = {}) {
+  if (!folderId) throw new Error('folderId 不能为空');
+  const { strategy = 'domain', cleanEmptyFolders = false } = options;
+
+  // 读取顶层子项
+  const children = await chrome.bookmarks.getChildren(folderId);
+  if (!children || children.length === 0) return { moved: 0, createdFolders: 0, cleanedFolders: 0 };
+
+  // 工具：安全解析 URL
+  const parseUrl = (url) => {
+    try { return new URL(url); } catch { return null; }
+  };
+
+  // 工具：提取域名
+  const getDomain = (url) => {
+    const u = parseUrl(url); if (!u) return '未知来源';
+    return (u.hostname || '').replace(/^www\./, '') || '未知来源';
+  };
+
+  // 工具：提取顶级域名（简易 eTLD+1，无法覆盖公共后缀库，权衡体积）
+  const getTopDomain = (url) => {
+    const host = getDomain(url);
+    const parts = host.split('.');
+    if (parts.length <= 2) return host || '未知来源';
+    // 简化规则：保留最后两段，如 example.co.uk -> co.uk（注意这并非严格 PSL 规则）
+    return parts.slice(-2).join('.') || host;
+  };
+
+  // 工具：提取路径前缀
+  const getPathPrefix = (url) => {
+    const u = parseUrl(url); if (!u) return '根路径';
+    const segs = (u.pathname || '/').split('/').filter(Boolean);
+    return segs[0] ? `/${segs[0]}` : '根路径';
+  };
+
+  // 工具：提取标题关键词（首个以空格分隔的词）
+  const getKeyword = (title) => {
+    const t = (title || '').trim();
+    if (!t) return '未命名';
+    const first = t.split(/\s+/)[0];
+    return first || '未命名';
+  };
+
+  // 根据策略选择分组 key 生成器
+  const keyOf = (item) => {
+    if (!item.url) return null; // 跳过文件夹子项
+    switch (strategy) {
+      case 'topDomain': return getTopDomain(item.url);
+      case 'pathPrefix': return getPathPrefix(item.url);
+      case 'keyword': return getKeyword(item.title);
+      case 'domain':
+      default: return getDomain(item.url);
+    }
+  };
+
+  // 查重与缓存：在父文件夹下寻找已存在的同名子文件夹，避免重复创建
+  const folderCache = new Map(); // name -> id
+  const siblings = await chrome.bookmarks.getChildren(folderId);
+  for (const s of siblings) {
+    if (!s.url) folderCache.set(s.title, s.id);
+  }
+
+  const createdFoldersSet = new Set();
+  const ensureFolder = async (name) => {
+    if (folderCache.has(name)) return folderCache.get(name);
+    const created = await chrome.bookmarks.create({ parentId: folderId, title: name });
+    folderCache.set(name, created.id);
+    createdFoldersSet.add(created.id);
+    return created.id;
+  };
+
+  // 生成移动计划
+  const movePlans = []; // { id, from, to, index }
+  for (const c of children) {
+    if (!c.url) continue; // 只整理顶层书签
+    const key = keyOf(c);
+    if (!key) continue;
+    const toId = await ensureFolder(key);
+    if (c.parentId !== toId) {
+      movePlans.push({ id: c.id, from: c.parentId, to: toId, index: 0 });
+    }
+  }
+
+  // 执行移动
+  let moved = 0;
+  for (const p of movePlans) {
+    await chrome.bookmarks.move(p.id, { parentId: p.to, index: p.index });
+    moved += 1;
+  }
+
+  // 可选：清理空文件夹（仅清理目标 folderId 的直接子文件夹，且不清理刚新建但为空的分类文件夹）
+  let cleanedFolders = 0;
+  const cleanedFolderInfos = [];
+  if (cleanEmptyFolders) {
+    const afterChildren = await chrome.bookmarks.getChildren(folderId);
+    for (const it of afterChildren) {
+      if (it.url) continue;
+      // 跳过新建的分类文件夹，避免误删用户刚建但暂时为空的分类
+      if (createdFoldersSet.has(it.id)) continue;
+      const sub = await chrome.bookmarks.getChildren(it.id);
+      if (!sub || sub.length === 0) {
+        // 记录以便撤销时重建
+        cleanedFolderInfos.push({ id: it.id, title: it.title, parentId: it.parentId, index: it.index ?? 0 });
+        await chrome.bookmarks.removeTree(it.id);
+        cleanedFolders += 1;
+      }
+    }
+  }
+
+  // 记录撤销信息
+  if (moved > 0 || createdFoldersSet.size > 0 || cleanedFolders > 0) {
+    lastAction = {
+      type: 'BATCH_MOVE',
+      data: movePlans.map(p => ({ id: p.id, originalParentId: p.from, originalIndex: 0 })),
+      createdFolderIds: Array.from(createdFoldersSet),
+      cleanedEmptyFolders: cleanedFolderInfos // 记录被清理的空文件夹，用于撤销重建
+    };
+  }
+
+  return { moved, createdFolders: createdFoldersSet.size, cleanedFolders };
+}
+
+// 保留旧函数名以兼容现有调用（如果其他地方引用）
+async function smartOrganizeByDomain(folderId) {
+  return smartOrganize(folderId, { strategy: 'domain', cleanEmptyFolders: false });
 }
