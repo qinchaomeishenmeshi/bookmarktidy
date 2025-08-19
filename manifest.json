@@ -13,5 +13,6 @@
   "action": {
     "default_popup": "popup.html",
     "default_title": "书签管理器"
-  }
+  },
+  "options_page": "manager.html"
 }

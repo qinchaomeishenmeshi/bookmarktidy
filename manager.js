@@ -340,9 +340,17 @@ function handleSearch(e) {
 async function handleSortChange(e) {
   state.sortBy = e.target.value;
   
+  console.log('排序变更:', {
+    sortBy: state.sortBy,
+    isExtension: isExtensionEnvironment(),
+    chromeAvailable: typeof chrome !== 'undefined'
+  });
+  
   // 如果在扩展环境中，同步排序到Chrome书签
   if (isExtensionEnvironment()) {
     await applySortToChromeBookmarks();
+  } else {
+    showToast('当前为开发环境，排序仅在前端显示，不会同步到Chrome书签', 'info');
   }
   
   renderBookmarks();
@@ -651,6 +659,8 @@ function bindBookmarkEvents() {
     });
   });
 }
+
+
 
 // 显示新建文件夹模态框
 function showNewFolderModal() {
