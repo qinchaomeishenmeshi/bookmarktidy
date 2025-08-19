@@ -327,7 +327,8 @@ body {
   width: fit-content;
 }
 
-.search-bar {
+.toolbar-actions input,
+.toolbar-actions select {
   padding: 8px 16px;
   border: 2px solid #e9ecef;
   border-radius: 8px;
@@ -724,7 +725,8 @@ body {
   color: #495057;
 }
 
-.close-btn {
+
+.modal-header .close-btn {
   background: none;
   border: none;
   font-size: 24px;
@@ -736,7 +738,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
   transition: background-color 0.2s ease;
 }
 
@@ -744,36 +745,206 @@ body {
   background: #f8f9fa;
 }
 
+
 .modal-body {
   padding: 24px;
 }
 
+/* 表单组样式 */
 .form-group {
-  margin-bottom: 20px;
+  margin: 12px auto;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
 }
 
-.form-group label {
+/* 表单标签样式 */
+.form-group label,
+.form-label {
   display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
-  color: #495057;
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 14px;
+  line-height: 1.4;
+  width: 80px;
+  text-align: right;
+  margin-right: 8px;
 }
 
+/* 表单输入框和选择框基础样式 */
 .form-group input,
-.form-group select {
-  width: 100%;
+.form-group select,
+.form-input,
+.form-select {
+  width: 80%;
   padding: 12px 16px;
-  border: 2px solid #e9ecef;
+  border: 2px solid #e2e8f0;
   border-radius: 8px;
   font-size: 14px;
-  transition: border-color 0.2s ease;
+  font-family: inherit;
+  background-color: #ffffff;
+  color: #2d3748;
+  transition: all 0.2s ease-in-out;
+  box-sizing: border-box;
 }
 
+/* 表单输入框和选择框聚焦状态 */
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-input:focus,
+.form-select:focus {
   outline: none;
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  background-color: #ffffff;
+}
+
+/* 表单输入框和选择框悬停状态 */
+.form-group input:hover,
+.form-group select:hover,
+.form-input:hover,
+.form-select:hover {
+  border-color: #cbd5e0;
+}
+
+/* 表单输入框和选择框禁用状态 */
+.form-group input:disabled,
+.form-group select:disabled,
+.form-input:disabled,
+.form-select:disabled {
+  background-color: #f7fafc;
+  color: #a0aec0;
+  cursor: not-allowed;
+  border-color: #e2e8f0;
+}
+
+/* 表单输入框占位符样式 */
+.form-group input::placeholder,
+.form-input::placeholder {
+  color: #a0aec0;
+  opacity: 1;
+}
+
+/* 选择框特殊样式 */
+.form-group select,
+.form-select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  padding-right: 40px;
+  appearance: none;
+}
+
+/* 表单验证状态 */
+.form-group input.error,
+.form-group select.error,
+.form-input.error,
+.form-select.error {
+  border-color: #e53e3e;
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+  background-color: #fef5f5;
+}
+
+.form-group input.success,
+.form-group select.success,
+.form-input.success,
+.form-select.success {
+  border-color: #38a169;
+  box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.1);
+  background-color: #f0fff4;
+}
+
+/* 表单帮助文本和错误信息 */
+.form-help,
+.form-error {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.form-help {
+  color: #718096;
+}
+
+.form-error {
+  color: #e53e3e;
+  font-weight: 500;
+}
+
+/* 表单组带图标的输入框 */
+.form-group.has-icon {
+  position: relative;
+}
+
+.form-group.has-icon input,
+.form-group.has-icon select {
+  padding-left: 44px;
+}
+
+.form-group.has-icon .form-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a0aec0;
+  font-size: 16px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.form-group.has-icon input:focus+.form-icon,
+.form-group.has-icon select:focus+.form-icon {
+  color: #667eea;
+}
+
+/* 表单分组样式 */
+.form-section {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.form-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.form-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* 内联表单样式 */
+.form-inline {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.form-inline .form-group {
+  margin-bottom: 0;
+  flex: 1;
+  min-width: 200px;
+}
+
+@media (max-width: 768px) {
+  .form-inline {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-inline .form-group {
+    min-width: auto;
+  }
 }
 
 .modal-footer {
@@ -854,33 +1025,66 @@ body {
   }
 }
 
-/* 表单样式 */
-.form-label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
-  color: #495057;
-  font-size: 14px;
-}
-
-
-
-.form-input:focus,
-.form-select:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
+/* 表单操作按钮区域样式 */
 .form-actions {
+  width: 100%;
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 12px;
-  padding: 20px 24px;
-  border-top: 1px solid #e9ecef;
-  background: #f8f9fa;
-  margin: 0 -24px -24px -24px;
+  padding: 10px 12px;
+  border-top: 1px solid #e2e8f0;
+  background: linear-gradient(to bottom, #f8fafc, #f1f5f9);
   border-radius: 0 0 12px 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* 表单操作按钮样式 */
+.form-actions .btn {
+  width: fit-content;
+  font-weight: 500;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.form-actions .btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+}
+
+.form-actions .btn-primary:hover {
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+  transform: translateY(-1px);
+}
+
+.form-actions .btn-secondary {
+  background: #ffffff;
+  color: #4a5568;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.form-actions .btn-secondary:hover {
+  background: #f7fafc;
+  border-color: #cbd5e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+
+/* 响应式表单操作区域 */
+@media (max-width: 480px) {
+  .form-actions {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+    min-width: auto;
+  }
 }
 
 /* 响应式设计 */
