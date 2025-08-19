@@ -1,312 +1,136 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BookmarkTidy - 智能书签管理</title>
-  <link rel="stylesheet" href="manager.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>书签管理器</title>
+  <!-- 使用manager.css -->
+  <link rel="stylesheet" href="manager.css">
 </head>
+
 <body>
-  <div id="app">
-    <!-- 顶部导航栏 -->
-    <header class="app-header">
-      <div class="header-content">
-        <div class="brand">
-          <div class="brand-icon">🔖</div>
-          <div class="brand-text">
-            <h1>BookmarkTidy</h1>
-            <span class="brand-subtitle">AI驱动的智能书签管理</span>
-          </div>
+  <div class="container">
+    <!-- 头部区域 -->
+    <div class="header">
+      <div class="stats">
+        <div class="stat-item">
+          <div class="stat-label">书签总数：</div>
+          <div class="stat-number" id="totalBookmarks">0</div>
         </div>
-        
-        <nav class="main-nav">
-          <button id="navOverview" class="nav-item active" data-panel="panelOverview">
-            <span class="nav-icon">📊</span>
-            <span class="nav-text">概览</span>
-          </button>
-          <button id="navBookmarks" class="nav-item" data-panel="panelBookmarks">
-            <span class="nav-icon">📚</span>
-            <span class="nav-text">书签管理</span>
-          </button>
-          <button id="navSettings" class="nav-item" data-panel="panelSettings">
-            <span class="nav-icon">⚙️</span>
-            <span class="nav-text">设置</span>
-          </button>
-        </nav>
+        <div class="stat-item">
+          <div class="stat-label">文件夹数：</div>
+          <div class="stat-number" id="totalFolders">0</div>
+        </div>
       </div>
-    </header>
+    </div>
 
-    <!-- 主内容区域 -->
-    <main class="main-content">
-      <!-- 概览面板 -->
-      <section id="panelOverview" class="content-panel active">
-        <div class="panel-header">
-          <h2>书签概览</h2>
-          <p class="panel-description">查看您的书签统计信息和快速操作</p>
+    <!-- 主要内容区域 -->
+    <div class="main-content">
+      <!-- 侧边栏 -->
+      <div class="sidebar">
+        <h3>📁 文件夹</h3>
+        <div id="folderTree">
+          <div class="loading">加载中...</div>
         </div>
-        
-        <div class="stats-container">
-          <div class="stat-card primary">
-            <div class="stat-icon">📖</div>
-            <div class="stat-content">
-              <div class="stat-number" id="totalBookmarks">-</div>
-              <div class="stat-label">总书签数</div>
-            </div>
-          </div>
-          
-          <div class="stat-card secondary">
-            <div class="stat-icon">📁</div>
-            <div class="stat-content">
-              <div class="stat-number" id="totalFolders">-</div>
-              <div class="stat-label">文件夹数</div>
-            </div>
-          </div>
-          
-          <div class="stat-card warning">
-            <div class="stat-icon">🔄</div>
-            <div class="stat-content">
-              <div class="stat-number" id="duplicateCount">-</div>
-              <div class="stat-label">疑似重复</div>
-            </div>
-          </div>
-          
-          <div class="stat-card danger">
-            <div class="stat-icon">⚠️</div>
-            <div class="stat-content">
-              <div class="stat-number" id="brokenLinks">-</div>
-              <div class="stat-label">失效链接</div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="quick-actions">
-          <button class="action-btn primary" id="btnStartManage">
-            <span class="btn-icon">🚀</span>
-            <span class="btn-text">开始管理书签</span>
-          </button>
-          <button class="action-btn secondary" id="btnQuickClean">
-            <span class="btn-icon">✨</span>
-            <span class="btn-text">智能清理</span>
-          </button>
-        </div>
-      </section>
+      </div>
 
-      <!-- 书签管理面板 -->
-      <section id="panelBookmarks" class="content-panel">
-        <div class="panel-header">
-          <h2>书签管理</h2>
-          <div class="header-actions">
-            <div class="search-container">
-              <input type="text" id="searchInput" class="search-input" placeholder="搜索书签..." />
-              <button id="btnSearch" class="search-btn">🔍</button>
-            </div>
-            <select id="folderFilter" class="modern-select" style="margin-right: 10px;">
-              <option value="">所有文件夹</option>
-            </select>
-            <button id="btnRefresh" class="refresh-btn">🔄</button>
-          </div>
-        </div>
-        
+      <!-- 内容区域 -->
+      <div class="content-area">
         <!-- 工具栏 -->
         <div class="toolbar">
-          <div class="toolbar-section">
-            <label class="select-all-container">
-              <input type="checkbox" id="selectAllCheckbox" class="select-all-checkbox" />
-              <span class="checkmark"></span>
-              <span class="select-text">全选</span>
-            </label>
-            <span id="selectedCount" class="selected-count">已选择 0 项</span>
-          </div>
-          
-          <div class="toolbar-section" id="batchOperations">
-            <select id="batchMoveTarget" class="modern-select">
-              <option value="">移动到文件夹...</option>
-            </select>
-            <button id="btnBatchMove" class="toolbar-btn" disabled>
-              <span class="btn-icon">📁</span>
-              移动
-            </button>
-            <button id="btnBatchUpdateTitle" class="toolbar-btn" disabled>
-              <span class="btn-icon">🏷️</span>
-              更新标题
-            </button>
-            <button id="btnBatchDelete" class="toolbar-btn danger" disabled>
-              <span class="btn-icon">🗑️</span>
-              删除
-            </button>
-          </div>
-          
-          <div class="toolbar-section">
-            <select id="toolFolderSelect" class="modern-select" style="width: 180px;">
-              <option value="">选择整理目标...</option>
-            </select>
-            <select id="organizeStrategy" class="modern-select" style="width: 140px;">
-              <option value="domain">按域名分类</option>
-              <option value="topDomain">按顶级域名</option>
-              <option value="pathPrefix">按路径前缀</option>
-              <option value="keyword">按标题关键词</option>
-            </select>
-            <label class="setting-label" style="margin-left: 8px; font-size: 13px;">
-              <input type="checkbox" id="cleanEmptyFolders" class="setting-checkbox" checked />
-              <span class="checkbox-custom" style="transform: scale(0.8);"></span>
-              <span class="label-text">清理空文件夹</span>
-            </label>
-            <button id="btnSmartOrganize" class="toolbar-btn" disabled>
-              <span class="btn-icon">🤖</span>
-              智能整理
-            </button>
-            <button id="btnAiOrganizePreview" class="toolbar-btn" disabled>
-              <span class="btn-icon">🧠</span>
-              AI分析
-            </button>
-            <button id="btnAiOrganizeApply" class="toolbar-btn" disabled>
-              <span class="btn-icon">✨</span>
-              AI整理
-            </button>
-            <button id="btnDedupPreview" class="toolbar-btn" disabled>
-              <span class="btn-icon">🔍</span>
-              去重预览
-            </button>
-            <button id="btnApplyDedup" class="toolbar-btn" disabled>
-              <span class="btn-icon">✨</span>
-              执行去重
-            </button>
-            <button id="btnLinkCheck" class="toolbar-btn" disabled>
-              <span class="btn-icon">🔗</span>
-              断链检测
-            </button>
-            <button id="btnUndo" class="toolbar-btn" disabled>
-              <span class="btn-icon">↩️</span>
-              撤销
-            </button>
-          </div>
-        </div>
-        
-        <!-- 书签列表视图 -->
-        <div class="bookmarks-container">
-          <!-- 视图切换按钮 -->
-          <div class="view-toggle-container" style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-            <button id="btnListView" class="view-toggle-btn active">
-              <span class="btn-icon">📋</span>
-              列表视图
-            </button>
-            <button id="btnTreeView" class="view-toggle-btn">
-              <span class="btn-icon">🌳</span>
-              树状视图
-            </button>
-          </div>
-          
-          <!-- 分离的列表容器 -->
-          <div id="listViewContainer" class="bookmarks-list-container">
-            <div class="loading-state">
-              <div class="loading-spinner"></div>
-              <p>正在加载书签...</p>
-            </div>
-          </div>
-          
-          <!-- 分离的树状容器 -->
-          <div id="treeViewContainer" class="bookmarks-tree-container hidden">
-            <div class="loading-state">
-              <div class="loading-spinner"></div>
-              <p>正在加载书签树...</p>
-            </div>
-          </div>
-          
-          <!-- 分页控件（仅列表视图时显示） -->
-          <div id="paginationContainer" class="pagination" style="margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 12px;">
-            <button id="btnPrevPage" class="toolbar-btn">上一页</button>
-            <span id="pageInfo">第 1 页，共 1 页，总计 0 条</span>
-            <button id="btnNextPage" class="toolbar-btn">下一页</button>
-          </div>
-        </div>
-        
-        <!-- 工具结果显示 -->
-        <div id="toolResults" class="tool-results hidden">
-          <div id="dedupResult" class="result-section"></div>
-          <div id="linkCheckResult" class="result-section"></div>
-          <div class="progress-container hidden" id="linkCheckProgress">
-            <div class="progress-bar">
-              <div class="progress-fill"></div>
-            </div>
-            <span class="progress-text">检测中...</span>
-          </div>
-        </div>
-      </section>
+          <div class="breadcrumb" id="breadcrumb">所有书签</div>
 
-      <!-- 设置面板 -->
-      <section id="panelSettings" class="content-panel">
-        <div class="panel-header">
-          <h2>设置</h2>
-          <p class="panel-description">自定义您的书签管理体验</p>
-        </div>
-        
-        <div class="settings-container">
-          <div class="setting-group">
-            <h3 class="group-title">断链检测</h3>
-            <div class="setting-item">
-              <label class="setting-label">
-                <input type="checkbox" id="enableLinkCheckSetting" class="setting-checkbox" />
-                <span class="checkbox-custom"></span>
-                <span class="label-text">启用断链检测功能</span>
-              </label>
-            </div>
-            <div class="setting-item">
-              <label class="setting-label">
-                <span class="label-text">检测超时时间（秒）</span>
-                <input type="number" id="linkCheckTimeout" class="setting-input" value="8" min="3" max="30" />
-              </label>
-            </div>
-            <div class="setting-item">
-              <label class="setting-label">
-                <span class="label-text">并发检测数量</span>
-                <input type="number" id="linkCheckConcurrency" class="setting-input" value="12" min="1" max="20" />
-              </label>
-            </div>
-          </div>
-          
-          <div class="setting-group">
-            <h3 class="group-title">界面设置</h3>
-            <div class="setting-item">
-              <label class="setting-label">
-                <span class="label-text">每页显示书签数</span>
-                <select id="pageSize" class="setting-select">
-                  <option value="50">50 条</option>
-                  <option value="100" selected>100 条</option>
-                  <option value="200">200 条</option>
-                </select>
-              </label>
-            </div>
-            <div class="setting-item">
-              <label class="setting-label">
-                <input type="checkbox" id="showUrlInList" class="setting-checkbox" checked />
-                <span class="checkbox-custom"></span>
-                <span class="label-text">在列表中显示完整 URL</span>
-              </label>
-            </div>
-          </div>
-          
-          <div class="setting-actions">
-            <button id="btnSaveSettings" class="action-btn primary">
-              <span class="btn-icon">💾</span>
-              <span class="btn-text">保存设置</span>
-            </button>
-            <button id="btnExportSettings" class="action-btn secondary">
-              <span class="btn-icon">📤</span>
-              <span class="btn-text">导出配置</span>
-            </button>
-            <button id="btnImportSettings" class="action-btn secondary">
-              <span class="btn-icon">📥</span>
-              <span class="btn-text">导入配置</span>
-            </button>
-          </div>
-        </div>
-      </section>
-    </main>
+          <div class="toolbar-actions">
+            <input type="text" id="searchInput" class="search-bar" placeholder="搜索书签...">
 
-    <!-- 消息提示 -->
-    <div id="messageArea" class="message-toast hidden"></div>
+            <select id="sortSelect" class="form-select sort-select">
+              <option value="title">按标题排序</option>
+              <option value="dateAdded">按添加时间排序</option>
+              <option value="url">按网址排序</option>
+            </select>
+
+
+
+
+            <button id="newFolderBtn" class="btn btn-secondary">
+              📁 新建文件夹
+            </button>
+          </div>
+        </div>
+
+        <!-- 书签列表 -->
+        <div id="bookmarkList" class="bookmark-list">
+          <div class="empty-state">
+            <div class="loading">📚 加载书签中...</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <script src="manager.js"></script>
+
+
+  <!-- 新建文件夹模态框 -->
+  <div id="newFolderModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">新建文件夹</h3>
+        <button class="close-btn">&times;</button>
+      </div>
+
+      <form id="newFolderForm">
+        <div class="form-group">
+          <label class="form-label" for="folderName">文件夹名称</label>
+          <input type="text" id="folderName" name="folderName" class="form-input" required>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary close-btn">取消</button>
+          <button type="submit" class="btn btn-primary">创建</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 编辑书签模态框 -->
+  <div id="editBookmarkModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">编辑书签</h3>
+        <button class="close-btn">&times;</button>
+      </div>
+
+      <form id="editBookmarkForm">
+        <div class="form-group">
+          <label class="form-label" for="editTitle">标题</label>
+          <input type="text" id="editTitle" name="title" class="form-input" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="editUrl">网址</label>
+          <input type="url" id="editUrl" name="url" class="form-input" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="editFolder">文件夹</label>
+          <select id="editFolder" name="folder" class="form-select">
+            <option value="">选择文件夹</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary close-btn">取消</button>
+          <button type="submit" class="btn btn-primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 消息提示 -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="manager.js?v=1.4"></script>
 </body>
+
 </html>

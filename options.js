@@ -10,23 +10,12 @@ async function loadSettings() {
     console.warn('预览模式：chrome.storage API不可用，使用默认设置');
     // 设置默认值
     document.getElementById('enableLinkCheck').checked = false;
-    document.getElementById('aiApiKey').value = '';
-    document.getElementById('aiBatchSize').value = '20';
-    document.getElementById('aiAutoClean').checked = true;
     return;
   }
   
-  const settings = await chrome.storage.sync.get([
-    'enableLinkCheck',
-    'aiApiKey',
-    'aiBatchSize',
-    'aiAutoClean'
-  ]);
+  const settings = await chrome.storage.sync.get(['enableLinkCheck']);
   
   document.getElementById('enableLinkCheck').checked = !!settings.enableLinkCheck;
-  document.getElementById('aiApiKey').value = settings.aiApiKey || '';
-  document.getElementById('aiBatchSize').value = settings.aiBatchSize || '20';
-  document.getElementById('aiAutoClean').checked = !!settings.aiAutoClean;
 }
 
 /**
@@ -36,10 +25,7 @@ async function loadSettings() {
 async function saveSettings() {
   try {
     const settings = {
-      enableLinkCheck: document.getElementById('enableLinkCheck').checked,
-      aiApiKey: document.getElementById('aiApiKey').value.trim(),
-      aiBatchSize: document.getElementById('aiBatchSize').value,
-      aiAutoClean: document.getElementById('aiAutoClean').checked
+      enableLinkCheck: document.getElementById('enableLinkCheck').checked
     };
     
     // 检查是否在扩展环境中

@@ -1,106 +1,192 @@
-* { box-sizing: border-box; }
-body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; }
-#app { width: 360px; padding: 12px; }
-header h1 { margin: 0; font-size: 18px; }
-.subtitle { margin: 4px 0 12px; color: #555; font-size: 12px; }
-
-/* 控制区样式 */
-.controls { border: 1px solid #eee; padding: 10px; border-radius: 8px; background: #fafafa; }
-.controls label { display: block; margin-bottom: 8px; }
-.controls select { width: 100%; padding: 6px; }
-.btn-row { display: flex; gap: 8px; }
-.btn-row button { flex: 1; padding: 8px; cursor: pointer; }
-
-/* 结果区样式 */
-.result { margin-top: 12px; min-height: 60px; }
-.hidden { display: none; }
-
-/* 卡片与行布局 */
-.card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin-bottom: 10px; background: #fff; }
-.card h3, .card h4 { margin: 0 0 8px 0; font-size: 16px; }
-.row { display: flex; align-items: center; margin-bottom: 6px; }
-.row:last-child { margin-bottom: 0; }
-
-/* 状态标签样式 */
-.badge { 
-  display: inline-block; 
-  padding: 2px 6px; 
-  border-radius: 4px; 
-  font-size: 10px; 
-  font-weight: bold; 
-  text-transform: uppercase; 
-  color: white; 
+/* 基础样式重置 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* 状态分类颜色 */
-.badge.ok { background-color: #28a745; }
-.badge.warn { background-color: #ffc107; color: #333; }
-.badge.fail { background-color: #dc3545; }
-.badge.timeout { background-color: #6c757d; }
-
-/* 按钮样式 */
-button { 
-  border: 1px solid #ccc; 
-  border-radius: 4px; 
-  padding: 6px 12px; 
-  background: #f8f9fa; 
-  cursor: pointer; 
-}
-button:hover { background: #e9ecef; }
-button:disabled { 
-  background: #e9ecef; 
-  color: #6c757d; 
-  cursor: not-allowed; 
-}
-
-/* 输入样式 */
-input[type="checkbox"] { margin-right: 8px; }
-
-/* 现代化选择器样式 */
-select {
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 8px 12px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  color: #374151;
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+  background: #f8f9fa;
+}
+
+/* 弹出窗口容器 */
+.popup-container {
+  width: 320px;
+  min-height: 200px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* 头部样式 */
+.popup-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 16px;
+  text-align: center;
+}
+
+.popup-header h1 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* 主内容区域 */
+.popup-main {
+  padding: 16px;
+}
+
+/* 章节标题 */
+h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 12px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+/* 管理器入口区域 */
+.manager-section {
+  margin-top: 16px;
+}
+
+.action-btn {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 8px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: white;
+  color: #495057;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  appearance: none;
-  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="%23666" d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 12px;
-  padding-right: 36px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
-select:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
-  background: #ffffff;
+.action-btn:hover {
+  background: #f8f9fa;
+  border-color: #adb5bd;
   transform: translateY(-1px);
 }
 
-select:hover {
-  border-color: #667eea;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
-  transform: translateY(-1px);
+.action-btn.primary {
+  background: #28a745;
+  color: white;
+  border-color: #28a745;
 }
 
-/* 通用输入框样式 */
-input {
-  border: 1px solid #d1d5db;
+.action-btn.primary:hover {
+  background: #218838;
+  border-color: #1e7e34;
+}
+
+/* 统计信息区域 */
+.stats-section {
+  margin-bottom: 16px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 12px;
+  background: #f8f9fa;
   border-radius: 6px;
-  padding: 8px 12px;
-  font-size: 14px;
-  transition: all 0.2s ease;
+  border: 1px solid #e9ecef;
 }
 
-input:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+.stat-number {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+  color: #667eea;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* 消息提示 */
+.message {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.message.success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.message.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.message.hidden {
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+}
+
+/* 响应式设计 */
+@media (max-width: 360px) {
+  .popup-container {
+    width: 300px;
+  }
+  
+  .popup-main {
+    padding: 12px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }

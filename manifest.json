@@ -1,24 +1,17 @@
 {
   "manifest_version": 3,
-  "name": "BookmarkTidy",
-  "version": "1.0.0",
-  "description": "智能书签整理工具：去重、断链检测、AI分类建议",
+  "name": "Simple Bookmark Manager",
+  "version": "2.0.0",
+  "description": "简洁的Chrome书签管理工具：查看、添加、编辑、删除书签",
   "permissions": [
     "bookmarks",
-    "storage",
-    "scripting",
-    "tabs"
-  ],
-  "host_permissions": [
-    "https://*/",
-    "http://*/"
+    "storage"
   ],
   "background": {
     "service_worker": "background.js"
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "BookmarkTidy"
-  },
-  "options_page": "options.html"
+    "default_title": "书签管理器"
+  }
 }

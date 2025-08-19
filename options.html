@@ -17,28 +17,7 @@
       </label>
     </section>
 
-    <section class="card">
-      <h2>AI智能整理</h2>
-      <div class="form-group">
-        <label for="aiApiKey">SiliconFlow API Key:</label>
-        <input type="password" id="aiApiKey" placeholder="请输入您的SiliconFlow API Key" />
-        <small>用于AI智能分析书签内容并自动分类。<a href="https://docs.siliconflow.cn/cn/userguide/quickstart" target="_blank">获取API Key</a></small>
-      </div>
-      <div class="form-group">
-        <label for="aiBatchSize">批处理大小:</label>
-        <select id="aiBatchSize">
-          <option value="10">10个书签/批次</option>
-          <option value="20" selected>20个书签/批次</option>
-          <option value="30">30个书签/批次</option>
-        </select>
-        <small>每次发送给AI分析的书签数量，较大值可能提高效率但增加成本</small>
-      </div>
-      <div class="form-group">
-        <label>
-          <input type="checkbox" id="aiAutoClean" /> 整理后自动清理空文件夹
-        </label>
-      </div>
-    </section>
+
 
     <div class="actions">
       <button id="btnSave">保存</button>

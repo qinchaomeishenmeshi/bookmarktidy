@@ -1,35 +1,45 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BookmarkTidy</title>
-  <link rel="stylesheet" href="popup.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>书签管理器</title>
+  <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <div id="app">
-    <header>
-      <h1>BookmarkTidy</h1>
-      <p class="subtitle">书签整理 · 去重 · 断链检测</p>
+  <div class="popup-container">
+    <header class="popup-header">
+      <h1>📚 书签管理器</h1>
     </header>
-
-    <section class="controls">
-      <label>
-        选择书签文件夹：
-        <select id="folderSelect">
-          <option value="">加载中...</option>
-        </select>
-      </label>
-      <div class="btn-row">
-        <button id="btnScan">扫描</button>
-        <button id="btnDedup" disabled>去重预览</button>
-        <button id="btnLinkCheck" disabled>断链检测</button>
-      </div>
-    </section>
-
-    <section id="result" class="result hidden"></section>
+    
+    <main class="popup-main">
+      <!-- 统计信息 -->
+      <section class="stats-section">
+        <h3>📊 书签统计</h3>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-number" id="totalBookmarks">-</span>
+            <span class="stat-label">总书签数</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number" id="totalFolders">-</span>
+            <span class="stat-label">文件夹数</span>
+          </div>
+        </div>
+      </section>
+      
+      <!-- 管理入口 -->
+      <section class="manager-section">
+        <button id="openManager" class="action-btn primary">
+          📋 打开书签管理器
+        </button>
+      </section>
+    </main>
+    
+    <!-- 消息提示 -->
+    <div id="message" class="message hidden"></div>
   </div>
-
+  
   <script src="popup.js"></script>
 </body>
 </html>
