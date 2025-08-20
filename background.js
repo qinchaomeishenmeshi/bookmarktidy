@@ -37,12 +37,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     case "getBookmarkFolders":
       handleGetBookmarkFolders(sendResponse);
       break;
+    case "getBookmarkVisitStats":
+      handleGetBookmarkVisitStats(request, sendResponse);
+      break;
+    case "getBookmarksWithVisitStats":
+      handleGetBookmarksWithVisitStats(sendResponse);
+      break;
     default:
       console.warn("[Background] 未知的操作:", request.action);
       sendResponse({ success: false, error: "未知的操作" });
+      return false;
   }
-
-  return true; // 保持消息通道开放
+  
+  // 返回true以保持消息通道开放，允许异步响应
+  return true;
 });
 
 /**
@@ -51,8 +59,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 async function handleGetAllBookmarks(sendResponse) {
   try {
     const bookmarkTree = await chrome.bookmarks.getTree();
-    console.log("[Background] 书签树获取成功:", bookmarkTree);
-    sendResponse({ success: true, bookmarks: bookmarkTree });
+    console.log("[Background] 原始书签树结构:", bookmarkTree);
+    
+    // Chrome书签API返回的是数组，第一个元素是根节点
+    // 我们需要获取根节点的children来获取实际的书签数据
+    const rootNode = bookmarkTree[0];
+    const bookmarkData = rootNode.children || [];
+    
+    console.log("[Background] 处理后的书签数据:", bookmarkData);
+    sendResponse({ success: true, bookmarks: bookmarkData });
   } catch (error) {
     console.error("[Background] 获取书签失败:", error);
     sendResponse({ success: false, error: error.message });
@@ -245,6 +260,131 @@ async function handleGetBookmarkFolders(sendResponse) {
     });
   } catch (error) {
     console.error("[Background] 获取文件夹列表失败:", error);
+    sendResponse({ success: false, error: error.message });
+  }
+}
+
+/**
+ * 获取单个书签的访问统计信息
+ */
+async function handleGetBookmarkVisitStats(request, sendResponse) {
+  try {
+    const { url } = request;
+    if (!url) {
+      throw new Error("缺少URL参数");
+    }
+
+    // 使用chrome.history API查询访问统计
+    const historyItems = await chrome.history.search({
+      text: url,
+      maxResults: 1
+    });
+
+    let visitCount = 0;
+    let lastVisitTime = null;
+
+    if (historyItems && historyItems.length > 0) {
+      const item = historyItems.find(h => h.url === url);
+      if (item) {
+        visitCount = item.visitCount || 0;
+        lastVisitTime = item.lastVisitTime || null;
+      }
+    }
+
+    sendResponse({
+      success: true,
+      stats: {
+        url,
+        visitCount,
+        lastVisitTime
+      }
+    });
+  } catch (error) {
+    console.error("[Background] 获取访问统计失败:", error);
+    sendResponse({ success: false, error: error.message });
+  }
+}
+
+/**
+ * 获取所有书签及其访问统计信息
+ */
+async function handleGetBookmarksWithVisitStats(sendResponse) {
+  try {
+    // 首先获取所有书签
+    const bookmarkTree = await chrome.bookmarks.getTree();
+    const bookmarks = [];
+
+    // 递归收集所有书签（非文件夹）
+    function collectBookmarks(nodes) {
+      for (const node of nodes) {
+        if (node.url) {
+          bookmarks.push({
+            id: node.id,
+            title: node.title,
+            url: node.url,
+            parentId: node.parentId,
+            dateAdded: node.dateAdded
+          });
+        }
+        if (node.children) {
+          collectBookmarks(node.children);
+        }
+      }
+    }
+
+    collectBookmarks(bookmarkTree);
+
+    // 批量获取访问统计信息
+    const bookmarksWithStats = [];
+    const batchSize = 50; // 分批处理以避免性能问题
+
+    for (let i = 0; i < bookmarks.length; i += batchSize) {
+      const batch = bookmarks.slice(i, i + batchSize);
+      const batchPromises = batch.map(async (bookmark) => {
+        try {
+          // 查询每个书签的访问统计
+          const historyItems = await chrome.history.search({
+            text: bookmark.url,
+            maxResults: 1
+          });
+
+          let visitCount = 0;
+          let lastVisitTime = null;
+
+          if (historyItems && historyItems.length > 0) {
+            const item = historyItems.find(h => h.url === bookmark.url);
+            if (item) {
+              visitCount = item.visitCount || 0;
+              lastVisitTime = item.lastVisitTime || null;
+            }
+          }
+
+          return {
+            ...bookmark,
+            visitCount,
+            lastVisitTime
+          };
+        } catch (error) {
+          console.warn(`[Background] 获取书签 ${bookmark.url} 的访问统计失败:`, error);
+          return {
+            ...bookmark,
+            visitCount: 0,
+            lastVisitTime: null
+          };
+        }
+      });
+
+      const batchResults = await Promise.all(batchPromises);
+      bookmarksWithStats.push(...batchResults);
+    }
+
+    console.log(`[Background] 成功获取 ${bookmarksWithStats.length} 个书签的访问统计`);
+    sendResponse({
+      success: true,
+      bookmarks: bookmarksWithStats
+    });
+  } catch (error) {
+    console.error("[Background] 获取书签访问统计失败:", error);
     sendResponse({ success: false, error: error.message });
   }
 }

@@ -6,6 +6,8 @@ const state = {
   searchQuery: "",
   editingBookmark: null,
   sortBy: "title", // 默认按标题排序
+  bookmarksWithStats: [], // 带访问统计的书签数据
+  isLoadingStats: false, // 是否正在加载统计数据
 };
 
 // DOM元素引用 - 将在init函数中初始化
@@ -35,6 +37,11 @@ async function init() {
     await loadBookmarks();
     await loadFolders();
     await loadStats(); // 统计数据依赖于书签和文件夹数据
+    
+    // 异步加载访问统计数据（不阻塞界面初始化）
+    loadBookmarksWithStats().catch(error => {
+      console.error("异步加载访问统计失败:", error);
+    });
 
     // 绑定事件
     bindEvents();
@@ -65,40 +72,62 @@ function getMockBookmarks() {
   const oneDay = 24 * 60 * 60 * 1000; // 一天的毫秒数
   
   return [
+    // 书签栏根目录下的书签
     {
       id: "1",
       title: "Vue.js 官方文档",
       url: "https://vuejs.org",
-      parentId: "0",
+      parentId: "1", // 书签栏
       dateAdded: now - oneDay * 5, // 5天前
     },
     {
       id: "2",
       title: "GitHub",
       url: "https://github.com",
-      parentId: "0",
+      parentId: "4", // 开发工具文件夹
       dateAdded: now - oneDay * 2, // 2天前
     },
     {
       id: "3",
       title: "MDN Web Docs",
       url: "https://developer.mozilla.org",
-      parentId: "0",
+      parentId: "7", // 前端技术文件夹
       dateAdded: now - oneDay * 10, // 10天前
     },
     {
       id: "4",
       title: "TypeScript 官网",
       url: "https://www.typescriptlang.org",
-      parentId: "0",
+      parentId: "7", // 前端技术文件夹
       dateAdded: now - oneDay * 1, // 1天前
     },
     {
       id: "5",
       title: "Vite 构建工具",
       url: "https://vitejs.dev",
-      parentId: "0",
+      parentId: "4", // 开发工具文件夹
       dateAdded: now - oneDay * 7, // 7天前
+    },
+    {
+      id: "6",
+      title: "Figma 设计工具",
+      url: "https://figma.com",
+      parentId: "5", // 设计资源文件夹
+      dateAdded: now - oneDay * 3, // 3天前
+    },
+    {
+      id: "7",
+      title: "YouTube",
+      url: "https://youtube.com",
+      parentId: "8", // 娱乐文件夹
+      dateAdded: now - oneDay * 6, // 6天前
+    },
+    {
+      id: "8",
+      title: "React 官方文档",
+      url: "https://react.dev",
+      parentId: "7", // 前端技术文件夹
+      dateAdded: now - oneDay * 4, // 4天前
     },
   ];
 }
@@ -107,24 +136,76 @@ function getMockBookmarks() {
 async function loadBookmarks() {
   try {
     if (isExtensionEnvironment()) {
+      console.log("[Manager] 扩展环境：开始获取Chrome书签数据");
       const response = await chrome.runtime.sendMessage({
         action: "getBookmarks",
       });
-      if (response.success) {
+      console.log("[Manager] 收到background响应:", response);
+      if (response && response.success) {
+        console.log("[Manager] 原始书签树结构:", response.bookmarks);
         state.bookmarks = flattenBookmarks(response.bookmarks);
-        console.log("书签加载完成:", state.bookmarks.length);
+        console.log("[Manager] 扁平化后的书签数据:", state.bookmarks);
+        console.log("[Manager] 书签加载完成:", state.bookmarks.length);
       } else {
-        throw new Error(response.error || "获取书签失败");
+        throw new Error(response?.error || "获取书签失败");
       }
     } else {
       // 开发环境使用模拟数据
-      console.log("开发环境：使用模拟书签数据");
+      console.log("[Manager] 开发环境：使用模拟书签数据");
       state.bookmarks = flattenBookmarks(getMockBookmarks());
-      console.log("模拟书签加载完成:", state.bookmarks.length);
+      console.log("[Manager] 模拟书签加载完成:", state.bookmarks.length);
     }
   } catch (error) {
-    console.error("加载书签失败:", error);
+    console.error("[Manager] 加载书签失败:", error);
     throw error;
+  }
+}
+
+/**
+ * 加载书签访问统计数据
+ */
+async function loadBookmarksWithStats() {
+  if (state.isLoadingStats) {
+    console.log("访问统计数据正在加载中，跳过重复请求");
+    return;
+  }
+
+  try {
+    state.isLoadingStats = true;
+    
+    if (isExtensionEnvironment()) {
+      console.log("开始加载书签访问统计数据...");
+      const response = await chrome.runtime.sendMessage({
+        action: "getBookmarksWithVisitStats",
+      });
+      
+      if (response.success) {
+        state.bookmarksWithStats = response.bookmarks;
+        console.log(`书签访问统计加载完成: ${state.bookmarksWithStats.length} 个书签`);
+      } else {
+        throw new Error(response.error || "获取访问统计失败");
+      }
+    } else {
+      // 开发环境使用模拟数据
+      console.log("开发环境：使用模拟访问统计数据");
+      state.bookmarksWithStats = state.bookmarks.map(bookmark => ({
+        ...bookmark,
+        visitCount: Math.floor(Math.random() * 100), // 模拟访问次数
+        lastVisitTime: Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000) // 模拟最后访问时间
+      }));
+      console.log("模拟访问统计数据生成完成:", state.bookmarksWithStats.length);
+    }
+  } catch (error) {
+    console.error("加载访问统计失败:", error);
+    // 如果加载统计失败，使用基础书签数据
+    state.bookmarksWithStats = state.bookmarks.map(bookmark => ({
+      ...bookmark,
+      visitCount: 0,
+      lastVisitTime: null
+    }));
+    showToast("访问统计加载失败，将显示基础数据: " + error.message, "warning");
+  } finally {
+    state.isLoadingStats = false;
   }
 }
 
@@ -205,23 +286,26 @@ function getMockStats() {
 async function loadFolders() {
   try {
     if (isExtensionEnvironment()) {
+      console.log("[Manager] 扩展环境：开始获取Chrome文件夹数据");
       const response = await chrome.runtime.sendMessage({
         action: "getBookmarkFolders",
       });
-      if (response.success) {
+      console.log("[Manager] 收到文件夹响应:", response);
+      if (response && response.success) {
         state.folders = response.folders;
-        console.log("文件夹加载完成:", state.folders.length);
+        console.log("[Manager] 文件夹数据:", state.folders);
+        console.log("[Manager] 文件夹加载完成:", state.folders.length);
       } else {
-        throw new Error(response.error || "获取文件夹失败");
+        throw new Error(response?.error || "获取文件夹失败");
       }
     } else {
       // 开发环境使用模拟数据
-      console.log("开发环境：使用模拟文件夹数据");
+      console.log("[Manager] 开发环境：使用模拟文件夹数据");
       state.folders = getMockFolders();
-      console.log("模拟文件夹加载完成:", state.folders.length);
+      console.log("[Manager] 模拟文件夹加载完成:", state.folders.length);
     }
   } catch (error) {
-    console.error("加载文件夹失败:", error);
+    console.error("[Manager] 加载文件夹失败:", error);
     throw error;
   }
 }
@@ -372,6 +456,19 @@ function sortBookmarks(bookmarks, sortBy) {
       });
     case 'url':
       return sorted.sort((a, b) => a.url.localeCompare(b.url));
+    case 'visitCount':
+      return sorted.sort((a, b) => {
+        // 按访问次数降序排列（访问次数多的在前）
+        const visitCountA = a.visitCount || 0;
+        const visitCountB = b.visitCount || 0;
+        if (visitCountB !== visitCountA) {
+          return visitCountB - visitCountA;
+        }
+        // 如果访问次数相同，按最后访问时间降序排列
+        const lastVisitA = a.lastVisitTime || 0;
+        const lastVisitB = b.lastVisitTime || 0;
+        return lastVisitB - lastVisitA;
+      });
     default:
       return sorted;
   }
@@ -449,6 +546,7 @@ function getSortDisplayName(sortBy) {
     case 'title': return '标题';
     case 'dateAdded': return '添加时间';
     case 'url': return '网址';
+    case 'visitCount': return '使用频率';
     default: return '默认';
   }
 }
@@ -566,7 +664,12 @@ function selectFolder(folderId) {
 
 // 渲染书签列表
 function renderBookmarks() {
-  let filteredBookmarks = state.bookmarks;
+  // 优先使用带访问统计的数据源（如果可用）
+  let sourceBookmarks = state.bookmarksWithStats.length > 0 
+    ? state.bookmarksWithStats 
+    : state.bookmarks;
+  
+  let filteredBookmarks = sourceBookmarks;
 
   // 按文件夹过滤
   if (state.currentFolder) {
@@ -609,6 +712,35 @@ function renderBookmarks() {
           minute: '2-digit'
         }) : '未知时间';
         
+        // 格式化访问统计信息 - 只要有访问统计数据就显示
+        let visitStatsHtml = '';
+        if (state.bookmarksWithStats.length > 0 && bookmark.visitCount !== undefined) {
+          const visitCount = bookmark.visitCount || 0;
+          let lastVisitText = '从未访问';
+          
+          if (bookmark.lastVisitTime) {
+            const lastVisitDate = new Date(bookmark.lastVisitTime);
+            const now = new Date();
+            const diffMs = now - lastVisitDate;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) {
+              lastVisitText = '今天访问';
+            } else if (diffDays === 1) {
+              lastVisitText = '昨天访问';
+            } else if (diffDays < 7) {
+              lastVisitText = `${diffDays}天前访问`;
+            } else if (diffDays < 30) {
+              const weeks = Math.floor(diffDays / 7);
+              lastVisitText = `${weeks}周前访问`;
+            } else {
+              lastVisitText = lastVisitDate.toLocaleDateString('zh-CN');
+            }
+          }
+          
+          visitStatsHtml = `<div class="bookmark-stats">访问次数: ${visitCount} | ${lastVisitText}</div>`;
+        }
+        
         return `
     <div class="bookmark-item" data-bookmark-id="${bookmark.id}">
       <div class="bookmark-favicon">🔖</div>
@@ -618,6 +750,7 @@ function renderBookmarks() {
         </a>
         <div class="bookmark-url">${bookmark.url}</div>
         <div class="bookmark-date">添加时间: ${dateAdded}</div>
+        ${visitStatsHtml}
       </div>
       <div class="bookmark-actions">
         <button class="action-btn edit-btn" title="编辑">

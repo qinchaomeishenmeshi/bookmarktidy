@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>书签管理器调试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .debug-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .debug-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 书签管理器调试页面</h1>
+        
+        <div class="debug-section">
+            <h3>🔍 环境检测</h3>
+            <div id="environment-status"></div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>📖 书签数据测试</h3>
+            <button onclick="testBookmarks()">测试获取书签</button>
+            <div id="bookmarks-status"></div>
+            <pre id="bookmarks-data"></pre>
+        </div>
+        
+        <div class="debug-section">
+            <h3>📁 文件夹数据测试</h3>
+            <button onclick="testFolders()">测试获取文件夹</button>
+            <div id="folders-status"></div>
+            <pre id="folders-data"></pre>
+        </div>
+        
+        <div class="debug-section">
+            <h3>📊 访问统计测试</h3>
+            <button onclick="testVisitStats()">测试访问统计</button>
+            <div id="stats-status"></div>
+            <pre id="stats-data"></pre>
+        </div>
+    </div>
+
+    <script>
+        // 检测环境
+        function checkEnvironment() {
+            const envStatus = document.getElementById('environment-status');
+            
+            if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+                envStatus.innerHTML = '<div class="status success">✅ Chrome扩展环境检测成功</div>';
+                return true;
+            } else {
+                envStatus.innerHTML = '<div class="status error">❌ 非Chrome扩展环境</div>';
+                return false;
+            }
+        }
+        
+        // 测试书签获取
+        async function testBookmarks() {
+            const statusDiv = document.getElementById('bookmarks-status');
+            const dataDiv = document.getElementById('bookmarks-data');
+            
+            statusDiv.innerHTML = '<div class="status info">🔄 正在获取书签数据...</div>';
+            
+            try {
+                const response = await chrome.runtime.sendMessage({
+                    action: 'getBookmarks'
+                });
+                
+                console.log('[Debug] 书签响应:', response);
+                
+                if (response && response.success) {
+                    statusDiv.innerHTML = '<div class="status success">✅ 书签数据获取成功</div>';
+                    dataDiv.textContent = JSON.stringify(response.bookmarks, null, 2);
+                } else {
+                    statusDiv.innerHTML = `<div class="status error">❌ 书签数据获取失败: ${response?.error || '未知错误'}</div>`;
+                    dataDiv.textContent = JSON.stringify(response, null, 2);
+                }
+            } catch (error) {
+                console.error('[Debug] 书签获取错误:', error);
+                statusDiv.innerHTML = `<div class="status error">❌ 书签获取异常: ${error.message}</div>`;
+                dataDiv.textContent = error.stack;
+            }
+        }
+        
+        // 测试文件夹获取
+        async function testFolders() {
+            const statusDiv = document.getElementById('folders-status');
+            const dataDiv = document.getElementById('folders-data');
+            
+            statusDiv.innerHTML = '<div class="status info">🔄 正在获取文件夹数据...</div>';
+            
+            try {
+                const response = await chrome.runtime.sendMessage({
+                    action: 'getBookmarkFolders'
+                });
+                
+                console.log('[Debug] 文件夹响应:', response);
+                
+                if (response && response.success) {
+                    statusDiv.innerHTML = '<div class="status success">✅ 文件夹数据获取成功</div>';
+                    dataDiv.textContent = JSON.stringify(response.folders, null, 2);
+                } else {
+                    statusDiv.innerHTML = `<div class="status error">❌ 文件夹数据获取失败: ${response?.error || '未知错误'}</div>`;
+                    dataDiv.textContent = JSON.stringify(response, null, 2);
+                }
+            } catch (error) {
+                console.error('[Debug] 文件夹获取错误:', error);
+                statusDiv.innerHTML = `<div class="status error">❌ 文件夹获取异常: ${error.message}</div>`;
+                dataDiv.textContent = error.stack;
+            }
+        }
+        
+        // 测试访问统计
+        async function testVisitStats() {
+            const statusDiv = document.getElementById('stats-status');
+            const dataDiv = document.getElementById('stats-data');
+            
+            statusDiv.innerHTML = '<div class="status info">🔄 正在获取访问统计...</div>';
+            
+            try {
+                const response = await chrome.runtime.sendMessage({
+                    action: 'getBookmarksWithVisitStats'
+                });
+                
+                console.log('[Debug] 访问统计响应:', response);
+                
+                if (response && response.success) {
+                    statusDiv.innerHTML = '<div class="status success">✅ 访问统计获取成功</div>';
+                    dataDiv.textContent = JSON.stringify(response.bookmarks, null, 2);
+                } else {
+                    statusDiv.innerHTML = `<div class="status error">❌ 访问统计获取失败: ${response?.error || '未知错误'}</div>`;
+                    dataDiv.textContent = JSON.stringify(response, null, 2);
+                }
+            } catch (error) {
+                console.error('[Debug] 访问统计错误:', error);
+                statusDiv.innerHTML = `<div class="status error">❌ 访问统计异常: ${error.message}</div>`;
+                dataDiv.textContent = error.stack;
+            }
+        }
+        
+        // 页面加载时检测环境
+        document.addEventListener('DOMContentLoaded', () => {
+            checkEnvironment();
+        });
+    </script>
+</body>
+</html>

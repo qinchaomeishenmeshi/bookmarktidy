@@ -5,7 +5,8 @@
   "description": "简洁的Chrome书签管理工具：查看、添加、编辑、删除书签",
   "permissions": [
     "bookmarks",
-    "storage"
+    "storage",
+    "history"
   ],
   "background": {
     "service_worker": "background.js"
@@ -14,5 +15,11 @@
     "default_popup": "popup.html",
     "default_title": "书签管理器"
   },
-  "options_page": "manager.html"
+  "options_page": "manager.html",
+  "web_accessible_resources": [
+    {
+      "resources": ["debug.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }

@@ -606,10 +606,24 @@ body {
   padding: 2px 6px;
   background: rgba(108, 117, 125, 0.1);
   border-radius: 4px;
-  display: inline-block;
-  font-weight: 500;
-  border-left: 3px solid #667eea;
 }
+
+.bookmark-stats {
+  font-size: 12px;
+  color: #28a745;
+  margin-top: 4px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bookmark-stats::before {
+  content: "📊";
+  font-size: 10px;
+}
+
+/* 书签标题和URL样式 */
 
 .bookmark-title,
 .bookmark-url {
