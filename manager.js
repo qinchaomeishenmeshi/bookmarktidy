@@ -534,8 +534,10 @@ async function applySortToChromeBookmarks() {
 }
 
 // 获取当前文件夹的书签
+// 获取当前文件夹的书签（根据排序方式选择合适的数据源）
 function getCurrentFolderBookmarks() {
-  let bookmarks = state.bookmarks;
+  // 如果按使用频率排序，使用带统计数据的书签；否则使用普通书签
+  let bookmarks = state.sortBy === 'visitCount' ? state.bookmarksWithStats : state.bookmarks;
   
   // 如果选择了特定文件夹，只获取该文件夹的书签
   if (state.currentFolder) {
@@ -722,10 +724,13 @@ function selectFolder(folderId) {
 
 // 渲染书签列表
 function renderBookmarks() {
-  // 优先使用带访问统计的数据源（如果可用）
-  let sourceBookmarks = state.bookmarksWithStats.length > 0 
-    ? state.bookmarksWithStats 
-    : state.bookmarks;
+  // 根据排序方式选择合适的数据源
+  let sourceBookmarks = state.sortBy === 'visitCount' ? state.bookmarksWithStats : state.bookmarks;
+  
+  // 如果按使用频率排序但没有统计数据，回退到普通书签数据
+  if (state.sortBy === 'visitCount' && state.bookmarksWithStats.length === 0) {
+    sourceBookmarks = state.bookmarks;
+  }
   
   let filteredBookmarks = sourceBookmarks;
 
