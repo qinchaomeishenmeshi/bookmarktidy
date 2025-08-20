@@ -219,6 +219,26 @@ body {
   font-weight: 500;
 }
 
+/* 文件夹注释样式 */
+.folder-note {
+  font-size: 11px;
+  color: #6c757d;
+  font-style: italic;
+  margin-left: 4px;
+  opacity: 0.8;
+}
+
+/* 所有书签选项特殊样式 */
+.folder-item.all-bookmarks {
+  border-bottom: 1px solid #e9ecef;
+  margin-bottom: 4px;
+  padding-bottom: 8px;
+}
+
+.folder-item.all-bookmarks .folder-icon {
+  color: #6f42c1;
+}
+
 /* 展开/折叠按钮 */
 .folder-toggle {
   width: 16px;
@@ -352,7 +372,7 @@ body {
   width: 160px;
   background: white;
   cursor: pointer;
-  transition: border-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .sort-select:focus {
@@ -361,8 +381,24 @@ body {
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.sort-select:hover {
+.sort-select:hover:not(:disabled) {
   border-color: #ced4da;
+}
+
+/* 排序选择器禁用状态 */
+.sort-select:disabled,
+.sort-select.disabled {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  border-color: #e9ecef;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.sort-select:disabled:hover,
+.sort-select.disabled:hover {
+  border-color: #e9ecef;
+  box-shadow: none;
 }
 
 /* 内容区域 */

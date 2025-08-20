@@ -33,6 +33,9 @@ async function init() {
 
     console.log("DOM元素初始化完成");
 
+    // 初始化排序选择器状态（默认禁用，直到选择文件夹）
+    updateSortSelectState();
+
     // 加载数据 - 注意顺序：先加载书签和文件夹，再计算统计数据
     await loadBookmarks();
     await loadFolders();
@@ -421,11 +424,21 @@ function handleSearch(e) {
 }
 
 // 排序处理 - 支持同步到Chrome书签
+// 处理排序变更事件
 async function handleSortChange(e) {
+  // 检查是否选中了文件夹
+  if (!state.currentFolder) {
+    showToast('请先选择一个文件夹再进行排序', 'warning');
+    // 重置排序选择器到默认值
+    e.target.value = state.sortBy;
+    return;
+  }
+  
   state.sortBy = e.target.value;
   
   console.log('排序变更:', {
     sortBy: state.sortBy,
+    currentFolder: state.currentFolder,
     isExtension: isExtensionEnvironment(),
     chromeAvailable: typeof chrome !== 'undefined'
   });
@@ -434,7 +447,7 @@ async function handleSortChange(e) {
   if (isExtensionEnvironment()) {
     await applySortToChromeBookmarks();
   } else {
-    showToast('当前为开发环境，排序仅在前端显示，不会同步到Chrome书签', 'info');
+    showToast(`当前文件夹书签已按${getSortDisplayName(state.sortBy)}排序（开发环境仅前端显示）`, 'info');
   }
   
   renderBookmarks();
@@ -551,16 +564,48 @@ function getSortDisplayName(sortBy) {
   }
 }
 
+// 更新排序选择器状态
+function updateSortSelectState() {
+  if (!elements.sortSelect) return;
+  
+  const hasSelectedFolder = !!state.currentFolder;
+  
+  // 启用或禁用排序选择器
+  elements.sortSelect.disabled = !hasSelectedFolder;
+  
+  // 更新样式和提示
+  if (hasSelectedFolder) {
+    elements.sortSelect.title = '选择排序方式';
+    elements.sortSelect.classList.remove('disabled');
+  } else {
+    elements.sortSelect.title = '请先选择文件夹后再排序';
+    elements.sortSelect.classList.add('disabled');
+    // 重置为默认排序
+    elements.sortSelect.value = 'title';
+    state.sortBy = 'title';
+  }
+}
 
 
-// 渲染文件夹树
+
 // 渲染文件夹树（支持多层级结构）
 function renderFolderTree() {
   const folders = state.folders;
   console.log("文件夹树数据:", folders);
 
+  // 添加"所有书签"选项
+  let html = `
+    <div class="folder-item all-bookmarks ${!state.currentFolder ? 'active' : ''}" 
+         data-folder-id="">
+      <span class="folder-toggle no-children">　</span>
+      <span class="folder-icon">📚</span>
+      <span class="folder-title" data-folder-id="">所有书签</span>
+      <span class="folder-note">(不支持排序)</span>
+    </div>
+  `;
+
   if (!folders || folders.length === 0) {
-    elements.folderTree.innerHTML = '<div class="no-folders">暂无文件夹</div>';
+    elements.folderTree.innerHTML = html + '<div class="no-folders">暂无文件夹</div>';
     return;
   }
 
@@ -570,7 +615,7 @@ function renderFolderTree() {
     const hasChildren = folder.children && folder.children.length > 0;
     const isExpanded = folder.expanded !== false; // 默认展开
     
-    let html = `
+    let nodeHtml = `
       <div class="folder-item ${state.currentFolder === folder.id ? 'active' : ''}" 
            data-folder-id="${folder.id}" 
            style="padding-left: ${indent}px;">
@@ -587,15 +632,15 @@ function renderFolderTree() {
     // 如果有子文件夹且处于展开状态，递归渲染子文件夹
     if (hasChildren && isExpanded) {
       for (const child of folder.children) {
-        html += renderFolderNode(child, level + 1);
+        nodeHtml += renderFolderNode(child, level + 1);
       }
     }
 
-    return html;
+    return nodeHtml;
   }
 
   // 渲染所有根级文件夹
-  const html = folders.map(folder => renderFolderNode(folder)).join('');
+  html += folders.map(folder => renderFolderNode(folder)).join('');
   elements.folderTree.innerHTML = html;
 
   // 绑定文件夹点击事件
@@ -644,19 +689,32 @@ function toggleFolderExpansion(folderId) {
 }
 
 // 选择文件夹
+// 选择文件夹函数
 function selectFolder(folderId) {
-  state.currentFolder = folderId;
+  // 如果folderId为空字符串，表示选择"所有书签"
+  state.currentFolder = folderId || null;
 
   // 更新文件夹选中状态
   elements.folderTree.querySelectorAll(".folder-item").forEach((item) => {
-    item.classList.toggle("active", item.dataset.folderId === folderId);
+    const itemFolderId = item.dataset.folderId;
+    // 对于"所有书签"选项，folderId为空字符串
+    const isActive = (folderId === "" && itemFolderId === "") || 
+                     (folderId !== "" && itemFolderId === folderId);
+    item.classList.toggle("active", isActive);
   });
 
   // 更新面包屑
-  const folder = state.folders.find((f) => f.id === folderId);
-  elements.breadcrumb.textContent = folder
-    ? `📁 ${folder.title}`
-    : "📚 所有书签";
+  if (!folderId) {
+    elements.breadcrumb.textContent = "📚 所有书签";
+  } else {
+    const folder = state.folders.find((f) => f.id === folderId);
+    elements.breadcrumb.textContent = folder
+      ? `📁 ${folder.title}`
+      : "📚 所有书签";
+  }
+
+  // 更新排序选择器状态
+  updateSortSelectState();
 
   // 重新渲染书签
   renderBookmarks();
