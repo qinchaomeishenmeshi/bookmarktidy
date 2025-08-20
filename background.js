@@ -48,7 +48,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       sendResponse({ success: false, error: "未知的操作" });
       return false;
   }
-  
+
   // 返回true以保持消息通道开放，允许异步响应
   return true;
 });
@@ -60,12 +60,12 @@ async function handleGetAllBookmarks(sendResponse) {
   try {
     const bookmarkTree = await chrome.bookmarks.getTree();
     console.log("[Background] 原始书签树结构:", bookmarkTree);
-    
+
     // Chrome书签API返回的是数组，第一个元素是根节点
     // 我们需要获取根节点的children来获取实际的书签数据
     const rootNode = bookmarkTree[0];
     const bookmarkData = rootNode.children || [];
-    
+
     console.log("[Background] 处理后的书签数据:", bookmarkData);
     sendResponse({ success: true, bookmarks: bookmarkData });
   } catch (error) {
@@ -208,10 +208,15 @@ async function handleGetBookmarkFolders(sendResponse) {
   try {
     const tree = await chrome.bookmarks.getTree();
     const root = tree[0].children || [];
-    
+
     // 找到书签栏节点
-    const bookmarksBar = root.find((item) => item.id === "1" || item.title === "书签栏" || item.title === "Bookmarks bar");
-    
+    const bookmarksBar = root.find(
+      (item) =>
+        item.id === "1" ||
+        item.title === "书签栏" ||
+        item.title === "Bookmarks bar"
+    );
+
     if (!bookmarksBar) {
       throw new Error("未找到书签栏");
     }
@@ -225,7 +230,11 @@ async function handleGetBookmarkFolders(sendResponse) {
 
       // 确定文件夹类型
       let folderType = "other";
-      if (node.id === "1" || node.title === "书签栏" || node.title === "Bookmarks bar") {
+      if (
+        node.id === "1" ||
+        node.title === "书签栏" ||
+        node.title === "Bookmarks bar"
+      ) {
         folderType = "bookmarks-bar";
       }
 
@@ -234,7 +243,7 @@ async function handleGetBookmarkFolders(sendResponse) {
         title: node.title || "未命名文件夹",
         folderType: folderType,
         parentId: parentId,
-        children: []
+        children: [],
       };
 
       // 递归处理子节点
@@ -251,7 +260,7 @@ async function handleGetBookmarkFolders(sendResponse) {
     }
 
     const folderTree = buildFolderTree(bookmarksBar);
-    
+
     console.log("[Background] 文件夹树结构:", folderTree);
 
     sendResponse({
@@ -277,14 +286,14 @@ async function handleGetBookmarkVisitStats(request, sendResponse) {
     // 使用chrome.history API查询访问统计
     const historyItems = await chrome.history.search({
       text: url,
-      maxResults: 1
+      maxResults: 1,
     });
 
     let visitCount = 0;
     let lastVisitTime = null;
 
     if (historyItems && historyItems.length > 0) {
-      const item = historyItems.find(h => h.url === url);
+      const item = historyItems.find((h) => h.url === url);
       if (item) {
         visitCount = item.visitCount || 0;
         lastVisitTime = item.lastVisitTime || null;
@@ -296,8 +305,8 @@ async function handleGetBookmarkVisitStats(request, sendResponse) {
       stats: {
         url,
         visitCount,
-        lastVisitTime
-      }
+        lastVisitTime,
+      },
     });
   } catch (error) {
     console.error("[Background] 获取访问统计失败:", error);
@@ -323,7 +332,7 @@ async function handleGetBookmarksWithVisitStats(sendResponse) {
             title: node.title,
             url: node.url,
             parentId: node.parentId,
-            dateAdded: node.dateAdded
+            dateAdded: node.dateAdded,
           });
         }
         if (node.children) {
@@ -345,14 +354,14 @@ async function handleGetBookmarksWithVisitStats(sendResponse) {
           // 查询每个书签的访问统计
           const historyItems = await chrome.history.search({
             text: bookmark.url,
-            maxResults: 1
+            maxResults: 1,
           });
 
           let visitCount = 0;
           let lastVisitTime = null;
 
           if (historyItems && historyItems.length > 0) {
-            const item = historyItems.find(h => h.url === bookmark.url);
+            const item = historyItems.find((h) => h.url === bookmark.url);
             if (item) {
               visitCount = item.visitCount || 0;
               lastVisitTime = item.lastVisitTime || null;
@@ -362,14 +371,17 @@ async function handleGetBookmarksWithVisitStats(sendResponse) {
           return {
             ...bookmark,
             visitCount,
-            lastVisitTime
+            lastVisitTime,
           };
         } catch (error) {
-          console.warn(`[Background] 获取书签 ${bookmark.url} 的访问统计失败:`, error);
+          console.warn(
+            `[Background] 获取书签 ${bookmark.url} 的访问统计失败:`,
+            error
+          );
           return {
             ...bookmark,
             visitCount: 0,
-            lastVisitTime: null
+            lastVisitTime: null,
           };
         }
       });
@@ -378,10 +390,12 @@ async function handleGetBookmarksWithVisitStats(sendResponse) {
       bookmarksWithStats.push(...batchResults);
     }
 
-    console.log(`[Background] 成功获取 ${bookmarksWithStats.length} 个书签的访问统计`);
+    console.log(
+      `[Background] 成功获取 ${bookmarksWithStats.length} 个书签的访问统计`
+    );
     sendResponse({
       success: true,
-      bookmarks: bookmarksWithStats
+      bookmarks: bookmarksWithStats,
     });
   } catch (error) {
     console.error("[Background] 获取书签访问统计失败:", error);
