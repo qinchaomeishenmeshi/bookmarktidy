@@ -997,7 +997,7 @@ async function handleEditBookmark(e) {
 
   const formData = new FormData(e.target);
   const updateData = {
-    bookmarkId: state.editingBookmark.id,
+    id: state.editingBookmark.id, // 修复：使用 id 而不是 bookmarkId
     title: formData.get("title"),
     url: formData.get("url"),
   };
@@ -1026,7 +1026,7 @@ async function handleEditBookmark(e) {
       // 开发环境模拟更新
       console.log("开发环境：模拟更新书签", updateData);
       const bookmarkIndex = state.bookmarks.findIndex(
-        (b) => b.id === updateData.bookmarkId
+        (b) => b.id === updateData.id // 修复：使用 id 而不是 bookmarkId
       );
       if (bookmarkIndex !== -1) {
         state.bookmarks[bookmarkIndex] = {
