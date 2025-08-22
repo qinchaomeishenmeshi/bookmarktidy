@@ -44,15 +44,17 @@
           <div class="toolbar-actions">
             <input type="text" id="searchInput" class="search-bar" placeholder="搜索书签...">
 
-            <select id="sortSelect" class="form-select sort-select">
-              <option value="title">按标题排序</option>
-              <option value="dateAdded">按添加时间排序</option>
-              <option value="url">按网址排序</option>
-              <option value="visitCount">按使用频率排序</option>
-            </select>
-
-
-
+            <div class="sort-container">
+              <select id="sortSelect" class="form-select sort-select">
+                <option value="title">按标题排序</option>
+                <option value="dateAdded">按添加时间排序</option>
+                <option value="url">按网址排序</option>
+                <option value="visitCount">按使用频率排序</option>
+              </select>
+              <button id="syncSortBtn" class="btn btn-primary" title="同步排序到Chrome书签">
+                    🔄 同步
+                </button>
+            </div>
 
             <button id="newFolderBtn" class="btn btn-secondary">
               📁 新建文件夹

@@ -35,6 +35,9 @@ async function init() {
 
     // 初始化排序选择器状态（默认禁用，直到选择文件夹）
     updateSortSelectState();
+    
+    // 初始化同步按钮状态
+    updateSyncButtonState();
 
     // 加载数据 - 注意顺序：先加载书签和文件夹，再计算统计数据
     await loadBookmarks();
@@ -386,6 +389,12 @@ function bindEvents() {
 
   // 排序功能
   elements.sortSelect.addEventListener("change", handleSortChange);
+  
+  // 同步排序按钮
+  const syncSortBtn = document.getElementById('syncSortBtn');
+  if (syncSortBtn) {
+    syncSortBtn.addEventListener('click', handleSyncSort);
+  }
 
   // 添加文件夹
   elements.newFolderBtn.addEventListener("click", showNewFolderModal);
@@ -425,6 +434,9 @@ function handleSearch(e) {
 
 // 排序处理 - 支持同步到Chrome书签
 // 处理排序变更事件
+/**
+ * 处理排序方式变更 - 仅更新前端显示，不立即同步到Chrome
+ */
 async function handleSortChange(e) {
   // 检查是否选中了文件夹
   if (!state.currentFolder) {
@@ -443,14 +455,64 @@ async function handleSortChange(e) {
     chromeAvailable: typeof chrome !== 'undefined'
   });
   
-  // 如果在扩展环境中，同步排序到Chrome书签
-  if (isExtensionEnvironment()) {
-    await applySortToChromeBookmarks();
-  } else {
-    showToast(`当前文件夹书签已按${getSortDisplayName(state.sortBy)}排序（开发环境仅前端显示）`, 'info');
+  // 更新同步按钮状态
+  updateSyncButtonState();
+  
+  // 仅更新前端显示，不同步到Chrome
+  showToast(`书签已按${getSortDisplayName(state.sortBy)}排序，点击同步按钮应用到Chrome`, 'info');
+  renderBookmarks();
+}
+
+/**
+ * 处理同步按钮点击 - 将排序同步到Chrome书签
+ */
+async function handleSyncSort() {
+  if (!state.currentFolder) {
+    showToast('请先选择一个文件夹', 'warning');
+    return;
   }
   
-  renderBookmarks();
+  const syncBtn = document.getElementById('syncSortBtn');
+  if (!syncBtn) return;
+  
+  // 设置按钮为加载状态
+  syncBtn.disabled = true;
+  syncBtn.innerHTML = '🔄 同步中...';
+  
+  try {
+    if (isExtensionEnvironment()) {
+      await applySortToChromeBookmarks();
+      showToast(`已将${getSortDisplayName(state.sortBy)}同步到Chrome书签`, 'success');
+    } else {
+      // 开发环境模拟延迟
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      showToast(`${getSortDisplayName(state.sortBy)}已同步（开发环境模拟）`, 'success');
+    }
+  } catch (error) {
+    console.error('同步排序失败:', error);
+    showToast('同步失败: ' + error.message, 'error');
+  } finally {
+    // 恢复按钮状态
+    syncBtn.disabled = false;
+    syncBtn.innerHTML = '🔄 同步';
+  }
+}
+
+/**
+ * 更新同步按钮状态
+ */
+function updateSyncButtonState() {
+  const syncBtn = document.getElementById('syncSortBtn');
+  if (!syncBtn) return;
+  
+  // 如果没有选中文件夹，禁用同步按钮
+  if (!state.currentFolder) {
+    syncBtn.disabled = true;
+    syncBtn.title = '请先选择文件夹';
+  } else {
+    syncBtn.disabled = false;
+    syncBtn.title = `同步${getSortDisplayName(state.sortBy)}到Chrome书签`;
+  }
 }
 
 // 书签排序函数
@@ -717,6 +779,9 @@ function selectFolder(folderId) {
 
   // 更新排序选择器状态
   updateSortSelectState();
+  
+  // 更新同步按钮状态
+  updateSyncButtonState();
 
   // 重新渲染书签
   renderBookmarks();
