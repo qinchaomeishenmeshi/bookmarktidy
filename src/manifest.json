@@ -6,7 +6,11 @@
   "permissions": [
     "bookmarks",
     "storage",
-    "history"
+    "history",
+    "favicon"
+  ],
+  "host_permissions": [
+    "<all_urls>"
   ],
   "background": {
     "service_worker": "background.js"
@@ -18,7 +22,7 @@
     "128": "icons/icon128.png"
   },
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "src/popup/popup.html",
     "default_title": "清简书签",
     "default_icon": {
       "16": "icons/icon16.png",
@@ -27,11 +31,15 @@
       "128": "icons/icon128.png"
     }
   },
-  "options_page": "manager.html",
+  "options_page": "src/manager/manager.html",
   "web_accessible_resources": [
     {
-      "resources": ["debug.html"],
-      "matches": ["<all_urls>"]
+      "resources": [
+        "debug.html"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ]
 }

@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# IDE & Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Cache
+.cache/
+.parcel-cache/
+.vite/
+
+# Debug
+debug.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Package manager locks (optional - uncomment if you prefer)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
