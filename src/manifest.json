@@ -7,7 +7,9 @@
     "bookmarks",
     "storage",
     "history",
-    "favicon"
+    "favicon",
+    "alarms",
+    "downloads"
   ],
   "host_permissions": [
     "<all_urls>"

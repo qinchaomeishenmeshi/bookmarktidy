@@ -1,9 +1,12 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useBookmarks, Bookmark, FolderTreeNode } from '@/hooks/useBookmarks';
 import { useStats } from '@/hooks/useStats';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { BookmarkDialog } from '@/components/BookmarkDialog';
@@ -21,7 +24,9 @@ import {
   CheckCircle,
   X,
   Eraser,
-  RefreshCw
+  RefreshCw,
+  Save,
+  Clock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -132,6 +137,48 @@ export default function ManagerPage() {
   const [isCheckingHealth, setIsCheckingHealth] = useState(false);
   const [isSyncingOrder, setIsSyncingOrder] = useState(false);
   const [checkProgress, setCheckProgress] = useState(0);
+
+  // 备份状态
+  const [backupDialogOpen, setBackupDialogOpen] = useState(false);
+  const [backupEnabled, setBackupEnabled] = useState(false);
+  const [backupFrequency, setBackupFrequency] = useState('daily');
+  const [lastBackupTime, setLastBackupTime] = useState<number | null>(null);
+
+  // 加载备份设置
+  useEffect(() => {
+    chrome.storage.local.get(['backupEnabled', 'backupFrequency', 'lastBackupTime'], (result) => {
+      if (result.backupEnabled !== undefined) setBackupEnabled(Boolean(result.backupEnabled));
+      if (typeof result.backupFrequency === 'string') setBackupFrequency(result.backupFrequency);
+      if (typeof result.lastBackupTime === 'number') setLastBackupTime(result.lastBackupTime);
+    });
+  }, []);
+
+  const handleSaveBackupSettings = (enabled: boolean, frequency: string) => {
+    setBackupEnabled(enabled);
+    setBackupFrequency(frequency);
+    
+    chrome.storage.local.set({ 
+      backupEnabled: enabled, 
+      backupFrequency: frequency 
+    });
+    
+    // 通知后台更新定时任务
+    chrome.runtime.sendMessage({ 
+      action: 'updateBackupSettings', 
+      enabled, 
+      frequency 
+    });
+  };
+
+  const handleTriggerBackup = async () => {
+    try {
+        await chrome.runtime.sendMessage({ action: 'triggerBackup' });
+        setLastBackupTime(Date.now());
+        alert('备份已开始下载，请查看浏览器下载内容。');
+    } catch (e) {
+        alert('备份失败');
+    }
+  };
 
   // 过滤书签
   const filteredBookmarks = useMemo(() => {
@@ -357,7 +404,10 @@ export default function ManagerPage() {
           </div>
         </div>
         
-        <div className="p-4 border-t">
+        <div className="p-4 border-t space-y-2">
+           <Button variant="ghost" className="w-full justify-start gap-2 h-9 px-3 text-muted-foreground" onClick={() => setBackupDialogOpen(true)}>
+             <Save className="h-4 w-4" /> 备份与恢复
+           </Button>
            <Button variant="outline" className="w-full gap-2 border-dashed h-9" onClick={() => setFolderDialogOpen(true)}>
              <Plus className="h-4 w-4" /> 新建文件夹
            </Button>
@@ -591,6 +641,81 @@ export default function ManagerPage() {
         parentId={currentFolder || '1'}
         onAdd={addFolder}
       />
+      {/* 备份设置对话框 */}
+      <Dialog open={backupDialogOpen} onOpenChange={setBackupDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>备份与恢复</DialogTitle>
+            <DialogDescription>
+              设置自动备份策略或手动导出书签。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-6 py-4">
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Clock className="h-4 w-4 text-primary" />
+                <h4 className="font-medium leading-none">定时自动备份</h4>
+              </div>
+              <p className="text-sm text-muted-foreground pl-6">
+                开启后，扩展将定期把您的书签自动备份到本地下载目录。
+              </p>
+              
+              <div className="flex items-start space-x-3 space-y-0 rounded-md border p-4 shadow-sm bg-muted/20">
+                <Checkbox 
+                  id="backup-enable" 
+                  checked={backupEnabled}
+                  onCheckedChange={(checked) => handleSaveBackupSettings(!!checked, backupFrequency)}
+                  className="mt-1"
+                />
+                <div className="space-y-1 flex-1">
+                  <Label 
+                    htmlFor="backup-enable" 
+                    className="cursor-pointer"
+                  >
+                    启用自动备份
+                  </Label>
+                   {backupEnabled && (
+                    <div className="pt-3">
+                       <Select
+                         value={backupFrequency}
+                         onValueChange={(val) => handleSaveBackupSettings(backupEnabled, val)}
+                       >
+                         <SelectTrigger className="w-full h-8 bg-background">
+                           <SelectValue placeholder="选择频率" />
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="daily">每天一次</SelectItem>
+                           <SelectItem value="weekly">每周一次</SelectItem>
+                           <SelectItem value="monthly">每月一次</SelectItem>
+                         </SelectContent>
+                       </Select>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            <Separator />
+            
+            <div className="space-y-4">
+               <div className="flex items-center space-x-2">
+                 <Save className="h-4 w-4 text-primary" />
+                 <h4 className="font-medium leading-none">手动导出</h4>
+               </div>
+               <div className="flex flex-col gap-3">
+                 <Button onClick={handleTriggerBackup} className="w-full">
+                   立即导出
+                 </Button>
+                 {lastBackupTime && (
+                   <p className="text-[10px] text-muted-foreground text-center">
+                     上次备份: {new Date(lastBackupTime).toLocaleString()}
+                   </p>
+                 )}
+               </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
