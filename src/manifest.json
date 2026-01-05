@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "清简书签管理器",
-  "version": "2.0.2",
-  "description": "简洁的Chrome书签管理工具：查看、添加、编辑、删除书签。支持文件夹分类、搜索、排序等功能。",
+  "version": "2.1.0",
+  "description": "简洁的Chrome书签管理工具：查看、添加、编辑、删除书签、文件夹分类、搜索、排序、健康检查、备份等功能。",
   "permissions": [
     "bookmarks",
     "storage",
